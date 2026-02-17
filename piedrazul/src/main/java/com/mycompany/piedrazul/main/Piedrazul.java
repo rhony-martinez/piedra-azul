@@ -16,14 +16,14 @@ public class Piedrazul {
         usuarioService = new UsuarioService(repository);
         
         // Crear usuario admin por defecto (si no existe)
-        crearUsuarioAdminPorDefecto();
+        //crearUsuarioAdminPorDefecto();
         
         // Iniciar interfaz gráfica
         forms = new Forms(usuarioService);
         forms.setVisible(true);
     }
     
-    private static void crearUsuarioAdminPorDefecto() {
+    /*private static void crearUsuarioAdminPorDefecto() {
         try {
             // Intentar autenticar para ver si existe
             Usuario admin = usuarioService.autenticar("admin", "Admin123!");
@@ -45,7 +45,7 @@ public class Piedrazul {
                 System.out.println("Error al crear admin: " + ex.getMessage());
             }
         }
-    }
+    }*/
     
     public static UsuarioService getUsuarioService() {
         return usuarioService;

@@ -198,7 +198,7 @@ public class Forms extends JFrame {
         JTextField txtNewUsername = new JTextField(15);
         JPasswordField txtNewPassword = new JPasswordField(15);
         JTextField txtNewNombre = new JTextField(15);
-        JComboBox<String> cmbRol = new JComboBox<>(new String[]{"ADMINISTRADOR", "MEDICO_TERAPISTA", "AGENDADOR"});
+        JComboBox<String> cmbRol = new JComboBox<>(new String[]{"PACIENTE", "MEDICO_TERAPISTA", "AGENDADOR"});
         
         gbc.gridx = 0; gbc.gridy = 0;
         panel.add(new JLabel("Username:"), gbc);

@@ -61,7 +61,7 @@ public class UsuarioService {
         }
         
         if (!esRolValido(rol)) {
-            throw new IllegalArgumentException("Rol inválido. Debe ser: ADMINISTRADOR, MEDICO_TERAPISTA o AGENDADOR");
+            throw new IllegalArgumentException("Rol inválido. Debe ser: PACIENTE, MEDICO_TERAPISTA o AGENDADOR");
         }
         
         String passwordHash = PasswordUtils.hashPassword(password);
@@ -72,7 +72,7 @@ public class UsuarioService {
     
     private boolean esRolValido(String rol) {
         return rol != null && (
-            rol.equals("ADMINISTRADOR") || 
+            rol.equals("PACIENTE") || 
             rol.equals("MEDICO_TERAPISTA") || 
             rol.equals("AGENDADOR")
         );
