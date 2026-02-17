@@ -15,7 +15,7 @@ public class Piedrazul {
         UsuarioRepositorySQLite repository = new UsuarioRepositorySQLite();
         usuarioService = new UsuarioService(repository);
         
-        // Crear usuario admin por defecto (si no existe)
+        
         crearUsuarioAdminPorDefecto();
         
         // Iniciar interfaz gráfica
