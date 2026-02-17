@@ -8,6 +8,6 @@ package com.mycompany.piedrazul.domain.repository;
  *
  * @author asus
  */
-public class IUsuarioRepository {
+public class UsuarioRepository {
     
 }
