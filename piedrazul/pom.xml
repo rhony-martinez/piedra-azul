@@ -8,7 +8,7 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.release>21</maven.compiler.release>
-        <exec.mainClass>com.mycompany.piedrazul.Piedrazul</exec.mainClass>
+        <exec.mainClass>com.mycompany.piedrazul.main.Piedrazul</exec.mainClass>
     </properties>
     <dependencies>
         <dependency>
