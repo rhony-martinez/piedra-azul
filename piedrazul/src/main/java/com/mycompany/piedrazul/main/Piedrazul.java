@@ -17,7 +17,8 @@ public class Piedrazul {
         
         // Crear usuario admin por defecto (si no existe)
         //crearUsuarioAdminPorDefecto();
-        
+
+
         // Iniciar interfaz gráfica
         forms = new Forms(usuarioService);
         forms.setVisible(true);
