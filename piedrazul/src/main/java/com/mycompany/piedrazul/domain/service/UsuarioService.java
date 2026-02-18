@@ -1,5 +1,6 @@
 package com.mycompany.piedrazul.domain.service;
 
+import com.mycompany.piedrazul.domain.model.Rol;
 import com.mycompany.piedrazul.domain.model.Usuario;
 import com.mycompany.piedrazul.domain.repository.IUsuarioRepository;
 import com.mycompany.piedrazul.utils.PasswordUtils;
@@ -42,7 +43,7 @@ public class UsuarioService {
     }
     
     // Crear nuevo usuario
-    public boolean crearUsuario(String username, String password, String nombreCompleto, String rol) {
+    public boolean crearUsuario(String username, String password, String nombreCompleto, Rol rol) {
         // Validaciones
         if (username == null || username.trim().isEmpty()) {
             throw new IllegalArgumentException("El nombre de usuario es requerido");
@@ -60,9 +61,9 @@ public class UsuarioService {
             throw new IllegalArgumentException("El nombre completo es requerido");
         }
         
-        if (!esRolValido(rol)) {
+        /*if (!esRolValido(rol)) {
             throw new IllegalArgumentException("Rol inválido. Debe ser: PACIENTE, MEDICO_TERAPISTA o AGENDADOR");
-        }
+        }*/
         
         String passwordHash = PasswordUtils.hashPassword(password);
         Usuario nuevoUsuario = new Usuario(username, passwordHash, nombreCompleto, rol);
@@ -70,11 +71,11 @@ public class UsuarioService {
         return usuarioRepository.create(nuevoUsuario);
     }
     
-    private boolean esRolValido(String rol) {
+    /*private boolean esRolValido(Rol rol) {
         return rol != null && (
-            rol.equals("PACIENTE") || 
-            rol.equals("MEDICO_TERAPISTA") || 
-            rol.equals("AGENDADOR")
+            rol == "PACIENTE" || 
+            rol == "MEDICO_TERAPISTA" || 
+            rol == "AGENDADOR"
         );
-    }
+    }*/
 }

@@ -1,5 +1,6 @@
 package com.mycompany.piedrazul.infrastructure.persistence;
 
+import com.mycompany.piedrazul.domain.model.Rol;
 import com.mycompany.piedrazul.domain.model.Usuario;
 import com.mycompany.piedrazul.domain.repository.IUsuarioRepository;
 import java.sql.*;
@@ -91,7 +92,7 @@ public class UsuarioRepositorySQLite implements IUsuarioRepository {
             stmt.setString(1, usuario.getUsername());
             stmt.setString(2, usuario.getPasswordHash());
             stmt.setString(3, usuario.getNombreCompleto());
-            stmt.setString(4, usuario.getRol());
+            stmt.setString(4, usuario.getRol().name());
             stmt.setInt(5, usuario.isActivo() ? 1 : 0);
             stmt.setInt(6, usuario.getIntentosFallidos());
             
@@ -130,7 +131,7 @@ public class UsuarioRepositorySQLite implements IUsuarioRepository {
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             
             stmt.setString(1, usuario.getNombreCompleto());
-            stmt.setString(2, usuario.getRol());
+            stmt.setString(2, usuario.getRol().name());
             stmt.setInt(3, usuario.isActivo() ? 1 : 0);
             stmt.setInt(4, usuario.getId());
             
@@ -211,7 +212,8 @@ public class UsuarioRepositorySQLite implements IUsuarioRepository {
         usuario.setUsername(rs.getString("username"));
         usuario.setPasswordHash(rs.getString("password_hash"));
         usuario.setNombreCompleto(rs.getString("nombre_completo"));
-        usuario.setRol(rs.getString("rol"));
+        Rol rol = Rol.valueOf(rs.getString("rol"));
+        usuario.setRol(rol);
         usuario.setActivo(rs.getInt("activo") == 1);
         usuario.setIntentosFallidos(rs.getInt("intentos_fallidos"));
         return usuario;
