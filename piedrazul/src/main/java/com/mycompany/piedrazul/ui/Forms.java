@@ -1,4 +1,4 @@
-package com.mycompany.piedrazul.ui;
+/*package com.mycompany.piedrazul.ui;
 
 import com.mycompany.piedrazul.domain.model.Usuario;
 import com.mycompany.piedrazul.domain.service.UsuarioService;
@@ -256,4 +256,4 @@ public class Forms extends JFrame {
         dialog.add(panel);
         dialog.setVisible(true);
     }
-}
+}*/

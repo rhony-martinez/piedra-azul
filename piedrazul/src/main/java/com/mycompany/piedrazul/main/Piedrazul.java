@@ -3,12 +3,14 @@ package com.mycompany.piedrazul.main;
 import com.mycompany.piedrazul.domain.model.Usuario;
 import com.mycompany.piedrazul.domain.service.UsuarioService;
 import com.mycompany.piedrazul.infrastructure.persistence.UsuarioRepositorySQLite;
-import com.mycompany.piedrazul.ui.Forms;
+//import com.mycompany.piedrazul.ui.Forms;
+import com.mycompany.piedrazul.ui.LoginFrame;
 
 public class Piedrazul {
     
     private static UsuarioService usuarioService;
-    private static Forms forms;
+    //private static Forms forms;
+    private static LoginFrame loginFrame;
     
     public static void main(String[] args) {
         // Inicializar dependencias
@@ -20,8 +22,8 @@ public class Piedrazul {
 
 
         // Iniciar interfaz gráfica
-        forms = new Forms(usuarioService);
-        forms.setVisible(true);
+        loginFrame = new LoginFrame(usuarioService);
+        loginFrame.setVisible(true);
     }
     
     /*private static void crearUsuarioAdminPorDefecto() {

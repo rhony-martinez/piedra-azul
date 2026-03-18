@@ -5,7 +5,7 @@ public class Usuario {
     private String username;
     private String passwordHash;
     private String nombreCompleto;
-    private String rol; // ADMINISTRADOR, MEDICO_TERAPISTA, AGENDADOR
+    private Rol rol; // ADMINISTRADOR, MEDICO_TERAPISTA, AGENDADOR
     private boolean activo;
     private int intentosFallidos;
     
@@ -13,7 +13,7 @@ public class Usuario {
     public Usuario() {}
     
     // Constructor sin id
-    public Usuario(String username, String passwordHash, String nombreCompleto, String rol) {
+    public Usuario(String username, String passwordHash, String nombreCompleto, Rol rol) {
         this.username = username;
         this.passwordHash = passwordHash;
         this.nombreCompleto = nombreCompleto;
@@ -35,8 +35,13 @@ public class Usuario {
     public String getNombreCompleto() { return nombreCompleto; }
     public void setNombreCompleto(String nombreCompleto) { this.nombreCompleto = nombreCompleto; }
     
-    public String getRol() { return rol; }
-    public void setRol(String rol) { this.rol = rol; }
+    public Rol getRol() {
+        return rol;
+    }
+    
+    public void setRol(Rol rol){
+        this.rol = rol;
+    }
     
     public boolean isActivo() { return activo; }
     public void setActivo(boolean activo) { this.activo = activo; }
