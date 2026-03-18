@@ -31,73 +31,143 @@ public class RegistroFrame extends JFrame {
     private void initComponents() {
 
         setTitle("PIEDRAZUL - Registro");
-        setSize(400, 500);
+        setSize(700, 750);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 
-        JPanel mainPanel = new JPanel();
-        mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
-        mainPanel.setBorder(BorderFactory.createEmptyBorder(30, 60, 30, 60));
-        mainPanel.setBackground(Color.WHITE);
+        JPanel mainPanel = new JPanel(new BorderLayout());
+        mainPanel.setBackground(new Color(220, 220, 220));
+
+        // ==============================
+        // Barra superior
+        // ==============================
+        JPanel topBar = new JPanel(new BorderLayout());
+        topBar.setBackground(new Color(40, 170, 200));
+        topBar.setPreferredSize(new Dimension(700, 70));
 
         JLabel lblTitulo = new JLabel("PIEDRAZUL");
-        lblTitulo.setFont(new Font("Segoe UI", Font.BOLD, 26));
-        lblTitulo.setAlignmentX(Component.CENTER_ALIGNMENT);
+        lblTitulo.setFont(new Font("Segoe UI", Font.BOLD | Font.ITALIC, 28));
+        lblTitulo.setForeground(Color.WHITE);
+        lblTitulo.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 10));
 
-        JLabel lblSubtitulo = new JLabel("REGISTRAR USUARIO");
-        lblSubtitulo.setAlignmentX(Component.CENTER_ALIGNMENT);
+        topBar.add(lblTitulo, BorderLayout.WEST);
 
-        txtNombreCompleto = new JTextField();
-        txtNombreCompleto.setMaximumSize(new Dimension(Integer.MAX_VALUE, 35));
+        // ==============================
+        // Panel central
+        // ==============================
+        JPanel centerPanel = new JPanel();
+        centerPanel.setLayout(new BoxLayout(centerPanel, BoxLayout.Y_AXIS));
+        centerPanel.setBorder(BorderFactory.createEmptyBorder(40, 120, 40, 120));
+        centerPanel.setBackground(new Color(220, 220, 220));
 
-        txtUsername = new JTextField();
-        txtUsername.setMaximumSize(new Dimension(Integer.MAX_VALUE, 35));
+        JLabel lblSub = new JLabel("REGISTRAR USUARIO");
+        lblSub.setFont(new Font("Segoe UI", Font.BOLD, 26));
+        lblSub.setForeground(new Color(70, 170, 200));
+        lblSub.setAlignmentX(Component.CENTER_ALIGNMENT);
 
+        // ===== Campos =====
+
+        txtNombreCompleto = crearCampoTexto();
+        txtUsername = crearCampoTexto();
         txtPassword = new JPasswordField();
-        txtPassword.setMaximumSize(new Dimension(Integer.MAX_VALUE, 35));
+        txtPassword.setMaximumSize(new Dimension(Integer.MAX_VALUE, 45));
+        txtPassword.setBackground(new Color(180, 210, 220));
+        txtPassword.setBorder(BorderFactory.createLineBorder(new Color(40,170,200), 2));
 
-        // 🔥 Aquí usamos el enum directamente
         cmbRol = new JComboBox<>(Rol.values());
-        cmbRol.setMaximumSize(new Dimension(Integer.MAX_VALUE, 35));
+        cmbRol.setMaximumSize(new Dimension(Integer.MAX_VALUE, 45));
+        cmbRol.setBackground(new Color(180, 210, 220));
+        cmbRol.setBorder(BorderFactory.createLineBorder(new Color(40,170,200), 2));
 
-        JButton btnGuardar = new JButton("Guardar");
-        btnGuardar.setAlignmentX(Component.CENTER_ALIGNMENT);
+        JLabel lblNombre = crearLabel("Nombre completo");
+        JLabel lblUsername = crearLabel("Nombre de usuario");
+        JLabel lblPass = crearLabel("Contraseña");
+        JLabel lblRol = crearLabel("Rol");
 
-        JButton btnCancelar = new JButton("Cancelar");
-        btnCancelar.setAlignmentX(Component.CENTER_ALIGNMENT);
+        // ===== Botones =====
+        JButton btnGuardar = crearBoton("Guardar");
+        JButton btnCancelar = crearBoton("Cancelar");
 
-        // Acciones
         btnGuardar.addActionListener(e -> registrarUsuario());
         btnCancelar.addActionListener(e -> dispose());
 
-        // Agregar componentes
-        mainPanel.add(lblTitulo);
-        mainPanel.add(Box.createVerticalStrut(10));
-        mainPanel.add(lblSubtitulo);
-        mainPanel.add(Box.createVerticalStrut(30));
+        // ===== Agregar componentes =====
 
-        mainPanel.add(new JLabel("Nombre completo"));
-        mainPanel.add(txtNombreCompleto);
-        mainPanel.add(Box.createVerticalStrut(10));
+        centerPanel.add(lblSub);
+        centerPanel.add(Box.createVerticalStrut(40));
 
-        mainPanel.add(new JLabel("Nombre de usuario"));
-        mainPanel.add(txtUsername);
-        mainPanel.add(Box.createVerticalStrut(10));
+        centerPanel.add(lblNombre);
+        centerPanel.add(Box.createVerticalStrut(5));
+        centerPanel.add(txtNombreCompleto);
+        centerPanel.add(Box.createVerticalStrut(20));
 
-        mainPanel.add(new JLabel("Contraseña"));
-        mainPanel.add(txtPassword);
-        mainPanel.add(Box.createVerticalStrut(10));
+        centerPanel.add(lblUsername);
+        centerPanel.add(Box.createVerticalStrut(5));
+        centerPanel.add(txtUsername);
+        centerPanel.add(Box.createVerticalStrut(20));
 
-        mainPanel.add(new JLabel("Rol"));
-        mainPanel.add(cmbRol);
-        mainPanel.add(Box.createVerticalStrut(20));
+        centerPanel.add(lblPass);
+        centerPanel.add(Box.createVerticalStrut(5));
+        centerPanel.add(txtPassword);
+        centerPanel.add(Box.createVerticalStrut(20));
 
-        mainPanel.add(btnGuardar);
-        mainPanel.add(Box.createVerticalStrut(10));
-        mainPanel.add(btnCancelar);
+        centerPanel.add(lblRol);
+        centerPanel.add(Box.createVerticalStrut(5));
+        centerPanel.add(cmbRol);
+        centerPanel.add(Box.createVerticalStrut(40));
+
+        JPanel botonesPanel = new JPanel();
+        botonesPanel.setBackground(new Color(220, 220, 220));
+        botonesPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 60));
+        botonesPanel.setLayout(new FlowLayout(FlowLayout.CENTER, 40, 0));
+
+        botonesPanel.add(btnGuardar);
+        botonesPanel.add(btnCancelar);
+
+        centerPanel.add(botonesPanel);
+        centerPanel.add(Box.createVerticalStrut(40));
+
+        JLabel lblRegistro = new JLabel("Registro");
+        lblRegistro.setFont(new Font("Segoe UI", Font.ITALIC, 20));
+        lblRegistro.setForeground(new Color(70, 170, 200));
+        lblRegistro.setAlignmentX(Component.RIGHT_ALIGNMENT);
+
+        centerPanel.add(lblRegistro);
+
+
+        mainPanel.add(topBar, BorderLayout.NORTH);
+        mainPanel.add(centerPanel, BorderLayout.CENTER);
+
 
         add(mainPanel);
+        }
+    
+    private JTextField crearCampoTexto() {
+        JTextField campo = new JTextField();
+        campo.setMaximumSize(new Dimension(Integer.MAX_VALUE, 45));
+        campo.setBackground(new Color(180, 210, 220));
+        campo.setBorder(BorderFactory.createLineBorder(new Color(40,170,200), 2));
+        return campo;
     }
+
+    private JLabel crearLabel(String texto) {
+        JLabel label = new JLabel(texto);
+        label.setFont(new Font("Segoe UI", Font.BOLD, 18));
+        label.setForeground(new Color(70, 170, 200));
+        return label;
+    }
+
+    private JButton crearBoton(String texto) {
+       JButton boton = new JButton(texto);
+        boton.setBackground(new Color(70, 170, 200));
+        boton.setForeground(Color.WHITE);
+        boton.setFont(new Font("Segoe UI", Font.BOLD, 18));
+        boton.setFocusPainted(false);
+        boton.setPreferredSize(new Dimension(180, 45));
+        return boton;
+    }
+
+
 
     private void registrarUsuario() {
 
