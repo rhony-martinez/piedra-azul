@@ -1,0 +1,98 @@
+############################################
+# JAVA
+############################################
+*.class
+*.log
+*.ctxt
+
+# Archivos empaquetados
+*.jar
+*.war
+*.ear
+
+############################################
+# BUILD TOOLS (Maven / Gradle)
+############################################
+# Maven
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+
+# Gradle
+.gradle/
+build/
+
+############################################
+# IDEs
+############################################
+
+# IntelliJ IDEA
+.idea/
+*.iml
+*.iws
+out/
+
+# NetBeans
+nbproject/private/
+build/
+nbbuild/
+dist/
+nbdist/
+.nb-gradle/
+
+# VS Code
+.vscode/
+
+############################################
+# SISTEMA OPERATIVO
+############################################
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Mac
+.DS_Store
+
+############################################
+# LOGS Y TEMPORALES
+############################################
+logs/
+*.log
+*.tmp
+*.temp
+
+############################################
+# BASE DE DATOS Y CONFIGURACIÓN SENSIBLE
+############################################
+# Archivos de configuración local (credenciales)
+.env
+.env.*
+application.properties
+application.yml
+config.properties
+
+# Dumps de base de datos
+*.sql
+*.dump
+
+############################################
+# TESTS / REPORTES
+############################################
+coverage/
+*.exec
+
+############################################
+# DOCKER (si luego lo usan)
+############################################
+docker-compose.override.yml
+
+############################################
+# OTROS
+############################################
+*.swp
+*.bak
+*.orig
