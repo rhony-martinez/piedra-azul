@@ -166,6 +166,7 @@ public class LoginFrame extends JFrame {
 
         try {
             Usuario usuario = usuarioService.autenticar(username, password);
+            System.out.println("ROL DEL USUARIO: " + usuario.getRol());
 
             if (usuario == null) {
                 JOptionPane.showMessageDialog(this,

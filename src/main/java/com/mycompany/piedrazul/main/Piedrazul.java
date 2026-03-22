@@ -5,6 +5,8 @@ import com.mycompany.piedrazul.domain.builder.*;
 import com.mycompany.piedrazul.domain.model.Rol;
 import com.mycompany.piedrazul.domain.model.Usuario;
 import com.mycompany.piedrazul.domain.service.UsuarioService;
+import com.mycompany.piedrazul.infrastructure.persistence.MedicoRepositoryImpl;
+import com.mycompany.piedrazul.infrastructure.persistence.PacienteRepositoryImpl;
 import com.mycompany.piedrazul.infrastructure.persistence.PersonaRepositoryImpl;
 import com.mycompany.piedrazul.infrastructure.persistence.UsuarioRepositoryImpl;
 import com.mycompany.piedrazul.ui.LoginFrame;
@@ -19,7 +21,10 @@ public class Piedrazul {
         // Inicializar dependencias
         UsuarioRepositoryImpl ususarioRepository = new UsuarioRepositoryImpl();
         PersonaRepositoryImpl personaRepository = new PersonaRepositoryImpl();
-        usuarioService = new UsuarioService(ususarioRepository, personaRepository);
+        PacienteRepositoryImpl pacienteRepository  = new PacienteRepositoryImpl();
+        MedicoRepositoryImpl medicoRepository = new MedicoRepositoryImpl();
+        
+        usuarioService = new UsuarioService(ususarioRepository, personaRepository, pacienteRepository, medicoRepository);
         
         // Probar el patrón Builder antes de iniciar la UI
         //probarBuilderPattern();

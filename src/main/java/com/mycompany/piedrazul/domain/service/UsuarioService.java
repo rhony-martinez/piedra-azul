@@ -3,6 +3,8 @@ package com.mycompany.piedrazul.domain.service;
 import com.mycompany.piedrazul.domain.model.Persona;
 import com.mycompany.piedrazul.domain.model.Rol;
 import com.mycompany.piedrazul.domain.model.Usuario;
+import com.mycompany.piedrazul.domain.repository.IMedicoRepository;
+import com.mycompany.piedrazul.domain.repository.IPacienteRepository;
 import com.mycompany.piedrazul.domain.repository.IPersonaRepository;
 import com.mycompany.piedrazul.domain.repository.IUsuarioRepository;
 import com.mycompany.piedrazul.utils.PasswordUtils;
@@ -14,11 +16,15 @@ public class UsuarioService {
     
     private final IUsuarioRepository usuarioRepository;
     private final IPersonaRepository personaRepository;
+    private final IPacienteRepository pacienteRepository;
+    private final IMedicoRepository medicoRepository;
     
     // Inyección de dependencia por constructor (DIP aplicado)
-    public UsuarioService(IUsuarioRepository usuarioRepository, IPersonaRepository personaRepository) {
+    public UsuarioService(IUsuarioRepository usuarioRepository, IPersonaRepository personaRepository, IPacienteRepository pacienteRepository, IMedicoRepository medicoRepository) {
         this.usuarioRepository = usuarioRepository;
         this.personaRepository = personaRepository;
+        this.pacienteRepository = pacienteRepository;
+        this.medicoRepository = medicoRepository;
     }
     
     // Autenticar usuario
@@ -49,35 +55,7 @@ public class UsuarioService {
         }
     }
     
-    // Crear y registrar nuevo usuario
-    /*public boolean crearUsuario(String username, String password, String nombreCompleto, Rol rol) {
-        // Validaciones
-        if (username == null || username.trim().isEmpty()) {
-            throw new IllegalArgumentException("El nombre de usuario es requerido");
-        }
-        
-        if (usuarioRepository.usernameExists(username)) {
-            throw new IllegalArgumentException("El nombre de usuario ya existe");
-        }
-        
-        if (!PasswordUtils.validarContrasena(password)) {
-            throw new IllegalArgumentException("La contraseña debe tener mínimo 6 caracteres, al menos un dígito, una mayúscula y un carácter especial");
-        }
-        
-        if (nombreCompleto == null || nombreCompleto.trim().isEmpty()) {
-            throw new IllegalArgumentException("El nombre completo es requerido");
-        }
-        
-        /*if (!esRolValido(rol)) {
-            throw new IllegalArgumentException("Rol inválido. Debe ser: PACIENTE, MEDICO_TERAPISTA o AGENDADOR");
-        }*/
-        
-        /*String passwordHash = PasswordUtils.hashPassword(password);
-        Usuario nuevoUsuario = new Usuario(username, passwordHash, nombreCompleto, rol);
-        
-        return usuarioRepository.create(nuevoUsuario);
-    }*/
-    
+    // Registrar un usuario    
     public boolean registrarUsuario(
         String username,
         String password,
@@ -136,8 +114,28 @@ public class UsuarioService {
             throw new RuntimeException("Error al crear usuario");
         }
 
-        // 🔴 IMPORTANTE: aquí aún NO insertamos rol (falta repo)
-
+        switch (rol) {
+            case PACIENTE -> {
+                boolean creadoPaciente = pacienteRepository.create(persona.getId());
+                if (!creadoPaciente) {
+                    throw new RuntimeException("Error al crear paciente");
+                }
+            }
+        
+            case MEDICO_TERAPISTA -> {
+                //! Decidir si es MEDICO o TERAPISTA
+                String tipo = "MEDICO"; // por ahora fijo, luego hacerlo dinámico
+            
+                boolean creadoMedico = medicoRepository.create(persona.getId(), tipo);
+                if (!creadoMedico) {
+                    throw new RuntimeException("Error al crear médico");
+                }
+            }
+            
+            default -> {
+                // ADMINISTRADOR y AGENDADOR no hacen nada aquí
+            }
+        }
         return true;
     }
     /*private boolean esRolValido(Rol rol) {
