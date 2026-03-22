@@ -48,10 +48,14 @@ public class UsuarioRepositoryImpl implements IUsuarioRepository {
     
     @Override
     public Usuario findByUsername(String username) {
-        String sql = "SELECT * FROM usuarios WHERE username = ?";
+        String sql = "SELECT u.*, r.rol_nombre " +
+            "FROM Usuario u " +
+            "JOIN UsuarioRol ur ON u.usu_id = ur.usu_id " +
+            "JOIN Rol r ON ur.rol_id = r.rol_id " +
+            "WHERE u.username = ?";
         
         try (Connection conn = ConnectionFactory.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            PreparedStatement stmt = conn.prepareStatement(sql)) {
             
             stmt.setString(1, username);
             ResultSet rs = stmt.executeQuery();
@@ -67,10 +71,10 @@ public class UsuarioRepositoryImpl implements IUsuarioRepository {
     
     @Override
     public Usuario authenticate(String username, String passwordHash) {
-        String sql = "SELECT * FROM usuarios WHERE username = ? AND password_hash = ? AND activo = 1";
+        String sql = "SELECT * FROM Usuario WHERE username = ? AND usu_password = ? AND usu_estado = 'ACTIVO'";
         
         try (Connection conn = ConnectionFactory.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            PreparedStatement stmt = conn.prepareStatement(sql)) {
             
             stmt.setString(1, username);
             stmt.setString(2, passwordHash);
@@ -87,22 +91,44 @@ public class UsuarioRepositoryImpl implements IUsuarioRepository {
     
     @Override
     public boolean create(Usuario usuario) {
-        String sql = "INSERT INTO usuarios (username, password_hash, nombre_completo, rol, activo, intentos_fallidos) "
-                + "VALUES (?, ?, ?, ?, ?, ?)";
-        
-        try (Connection conn = ConnectionFactory.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-            
-            stmt.setString(1, usuario.getUsername());
-            stmt.setString(2, usuario.getPasswordHash());
-            stmt.setString(3, usuario.getNombreCompleto());
-            stmt.setString(4, usuario.getRol().name());
-            stmt.setInt(5, usuario.isActivo() ? 1 : 0);
-            stmt.setInt(6, usuario.getIntentosFallidos());
-            
-            int affectedRows = stmt.executeUpdate();
-            return affectedRows > 0;
-            
+
+        String sqlUsuario = "INSERT INTO Usuario (per_id, username, usu_password, usu_estado) VALUES (?, ?, ?, ?)";
+        String sqlUsuarioRol = "INSERT INTO UsuarioRol (usu_id, rol_id) VALUES (?, ?)";
+
+        try (Connection conn = ConnectionFactory.getConnection()) {
+
+            conn.setAutoCommit(false); // TRANSACTION
+
+            // 1. Insert Usuario
+            try (PreparedStatement stmt = conn.prepareStatement(sqlUsuario, Statement.RETURN_GENERATED_KEYS)) {
+
+                stmt.setInt(1, usuario.getPersonaId());
+                stmt.setString(2, usuario.getUsername());
+                stmt.setString(3, usuario.getPasswordHash());
+                stmt.setString(4, usuario.isActivo() ? "ACTIVO" : "INACTIVO");
+
+                stmt.executeUpdate();
+
+                ResultSet rs = stmt.getGeneratedKeys();
+                if (rs.next()) {
+                    int usuarioId = rs.getInt(1);
+                    usuario.setId(usuarioId);
+
+                    // 2. Obtener rol_id
+                    int rolId = obtenerRolIdPorNombre(usuario.getRol().name());
+
+                    // 3. Insert UsuarioRol
+                    try (PreparedStatement stmtRol = conn.prepareStatement(sqlUsuarioRol)) {
+                        stmtRol.setInt(1, usuarioId);
+                        stmtRol.setInt(2, rolId);
+                        stmtRol.executeUpdate();
+                    }
+                }
+            }
+
+            conn.commit(); // OK
+            return true;
+
         } catch (SQLException e) {
             e.printStackTrace();
             return false;
@@ -115,8 +141,8 @@ public class UsuarioRepositoryImpl implements IUsuarioRepository {
         String sql = "SELECT * FROM usuarios ORDER BY id";
         
         try (Connection conn = ConnectionFactory.getConnection();
-             Statement stmt = conn.createStatement();
-             ResultSet rs = stmt.executeQuery(sql)) {
+            Statement stmt = conn.createStatement();
+            ResultSet rs = stmt.executeQuery(sql)) {
             
             while (rs.next()) {
                 usuarios.add(mapResultSetToUsuario(rs));
@@ -128,31 +154,11 @@ public class UsuarioRepositoryImpl implements IUsuarioRepository {
     }
     
     @Override
-    public boolean update(Usuario usuario) {
-        String sql = "UPDATE usuarios SET nombre_completo = ?, rol = ?, activo = ? WHERE id = ?";
-        
-        try (Connection conn = ConnectionFactory.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-            
-            stmt.setString(1, usuario.getNombreCompleto());
-            stmt.setString(2, usuario.getRol().name());
-            stmt.setInt(3, usuario.isActivo() ? 1 : 0);
-            stmt.setInt(4, usuario.getId());
-            
-            return stmt.executeUpdate() > 0;
-            
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return false;
-        }
-    }
-    
-    @Override
     public boolean deactivate(int id) {
         String sql = "UPDATE usuarios SET activo = 0 WHERE id = ?";
         
         try (Connection conn = ConnectionFactory.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            PreparedStatement stmt = conn.prepareStatement(sql)) {
             
             stmt.setInt(1, id);
             return stmt.executeUpdate() > 0;
@@ -165,10 +171,10 @@ public class UsuarioRepositoryImpl implements IUsuarioRepository {
     
     @Override
     public boolean usernameExists(String username) {
-        String sql = "SELECT COUNT(*) FROM usuarios WHERE username = ?";
+        String sql = "SELECT COUNT(*) FROM Usuario WHERE username = ?";
         
         try (Connection conn = ConnectionFactory.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            PreparedStatement stmt = conn.prepareStatement(sql)) {
             
             stmt.setString(1, username);
             ResultSet rs = stmt.executeQuery();
@@ -187,7 +193,7 @@ public class UsuarioRepositoryImpl implements IUsuarioRepository {
         String sql = "UPDATE usuarios SET intentos_fallidos = intentos_fallidos + 1 WHERE username = ?";
         
         try (Connection conn = ConnectionFactory.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            PreparedStatement stmt = conn.prepareStatement(sql)) {
             
             stmt.setString(1, username);
             stmt.executeUpdate();
@@ -201,7 +207,7 @@ public class UsuarioRepositoryImpl implements IUsuarioRepository {
         String sql = "UPDATE usuarios SET intentos_fallidos = 0 WHERE username = ?";
         
         try (Connection conn = ConnectionFactory.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            PreparedStatement stmt = conn.prepareStatement(sql)) {
             
             stmt.setString(1, username);
             stmt.executeUpdate();
@@ -212,14 +218,17 @@ public class UsuarioRepositoryImpl implements IUsuarioRepository {
     
     private Usuario mapResultSetToUsuario(ResultSet rs) throws SQLException {
         Usuario usuario = new Usuario();
-        usuario.setId(rs.getInt("id"));
+
+        usuario.setId(rs.getInt("usu_id"));
         usuario.setUsername(rs.getString("username"));
-        usuario.setPasswordHash(rs.getString("password_hash"));
-        usuario.setNombreCompleto(rs.getString("nombre_completo"));
-        Rol rol = Rol.valueOf(rs.getString("rol"));
-        usuario.setRol(rol);
-        usuario.setActivo(rs.getInt("activo") == 1);
-        usuario.setIntentosFallidos(rs.getInt("intentos_fallidos"));
+        usuario.setPasswordHash(rs.getString("usu_password"));
+        usuario.setPersonaId(rs.getInt("per_id"));
+        usuario.setActivo("ACTIVO".equals(rs.getString("usu_estado")));
+
+        // obtener rol
+        String rolNombre = rs.getString("rol_nombre");
+        usuario.setRol(Rol.valueOf(rolNombre));
+
         return usuario;
     }
     
@@ -228,7 +237,7 @@ public class UsuarioRepositoryImpl implements IUsuarioRepository {
         String sql = "SELECT * FROM usuarios WHERE id = ?";
 
         try (Connection conn = ConnectionFactory.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setInt(1, id);
             ResultSet rs = stmt.executeQuery();
@@ -241,5 +250,30 @@ public class UsuarioRepositoryImpl implements IUsuarioRepository {
         }
         return null;
     }
+
+    @Override
+    public boolean update(Usuario usuario) {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    }
     
+    private int obtenerRolIdPorNombre(String rolNombre) {
+
+        String sql = "SELECT rol_id FROM Rol WHERE rol_nombre = ?";
+
+        try (Connection conn = ConnectionFactory.getConnection();
+            PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, rolNombre);
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                return rs.getInt("rol_id");
+            }
+
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+
+        throw new RuntimeException("Rol no encontrado: " + rolNombre);
+    }
 }

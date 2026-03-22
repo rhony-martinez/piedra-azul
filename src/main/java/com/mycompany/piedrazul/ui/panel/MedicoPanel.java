@@ -1,8 +1,8 @@
 package com.mycompany.piedrazul.ui.panel;
 
 import com.mycompany.piedrazul.domain.model.Usuario;
-import com.mycompany.piedrazul.ui.appointments.AppointmentListPanel;
-import com.mycompany.piedrazul.ui.appointments.ManualAppointmentDialog;
+// import com.mycompany.piedrazul.ui.appointments.AppointmentListPanel;
+// import com.mycompany.piedrazul.ui.appointments.ManualAppointmentDialog;
 import javax.swing.*;
 import java.awt.*;
 
@@ -30,23 +30,23 @@ public class MedicoPanel extends JPanel {
         JButton btnHistorial = crearBoton("HISTORIAL");
 
         // Acciones
-        btnAgendar.addActionListener(e -> {
-            ManualAppointmentDialog dialog = new ManualAppointmentDialog(
-                (JFrame) SwingUtilities.getWindowAncestor(this), 
-                usuarioActual
-            );
-            dialog.setVisible(true);
-        });
+        // btnAgendar.addActionListener(e -> {
+        //     ManualAppointmentDialog dialog = new ManualAppointmentDialog(
+        //         (JFrame) SwingUtilities.getWindowAncestor(this), 
+        //         usuarioActual
+        //     );
+        //     dialog.setVisible(true);
+        // });
 
-        btnCitasAgendadas.addActionListener(e -> {
-            AppointmentListPanel listPanel = new AppointmentListPanel(usuarioActual, false);
-            JOptionPane.showMessageDialog(this, listPanel, "Mis Citas", JOptionPane.PLAIN_MESSAGE);
-        });
+        // btnCitasAgendadas.addActionListener(e -> {
+        //     AppointmentListPanel listPanel = new AppointmentListPanel(usuarioActual, false);
+        //     JOptionPane.showMessageDialog(this, listPanel, "Mis Citas", JOptionPane.PLAIN_MESSAGE);
+        // });
 
-        btnHistorial.addActionListener(e -> {
-            AppointmentListPanel listPanel = new AppointmentListPanel(usuarioActual, true);
-            JOptionPane.showMessageDialog(this, listPanel, "Historial de Citas", JOptionPane.PLAIN_MESSAGE);
-        });
+        // btnHistorial.addActionListener(e -> {
+        //     AppointmentListPanel listPanel = new AppointmentListPanel(usuarioActual, true);
+        //     JOptionPane.showMessageDialog(this, listPanel, "Historial de Citas", JOptionPane.PLAIN_MESSAGE);
+        // });
 
         btnPacientesAtendidos.addActionListener(e -> {
             JOptionPane.showMessageDialog(this, 

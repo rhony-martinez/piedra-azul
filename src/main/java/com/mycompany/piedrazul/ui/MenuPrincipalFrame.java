@@ -34,7 +34,7 @@ public class MenuPrincipalFrame extends JFrame {
 
         // Header
         JLabel lblHeader = new JLabel(
-            "Bienvenido: " + usuario.getNombreCompleto() 
+            "Bienvenido: " + usuario.getUsername()
             + " - " + usuario.getRol(),
             SwingConstants.CENTER
         );

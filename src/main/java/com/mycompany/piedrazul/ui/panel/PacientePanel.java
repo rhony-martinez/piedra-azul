@@ -1,8 +1,8 @@
 package com.mycompany.piedrazul.ui.panel;
 
 import com.mycompany.piedrazul.domain.model.Usuario;
-import com.mycompany.piedrazul.ui.appointments.AppointmentListPanel;
-import com.mycompany.piedrazul.ui.appointments.SelfServiceAppointmentDialog;
+// import com.mycompany.piedrazul.ui.appointments.AppointmentListPanel;
+// import com.mycompany.piedrazul.ui.appointments.SelfServiceAppointmentDialog;
 import javax.swing.*;
 import java.awt.*;
 
@@ -32,18 +32,18 @@ public class PacientePanel extends JPanel {
         btnCitasAgendadas.setAlignmentX(Component.CENTER_ALIGNMENT);
 
         // Acciones
-        btnAgendar.addActionListener(e -> {
-            SelfServiceAppointmentDialog dialog = new SelfServiceAppointmentDialog(
-                (JFrame) SwingUtilities.getWindowAncestor(this), 
-                usuarioActual
-            );
-            dialog.setVisible(true);
-        });
+        // btnAgendar.addActionListener(e -> {
+        //     SelfServiceAppointmentDialog dialog = new SelfServiceAppointmentDialog(
+        //         (JFrame) SwingUtilities.getWindowAncestor(this), 
+        //         usuarioActual
+        //     );
+        //     dialog.setVisible(true);
+        // });
 
-        btnCitasAgendadas.addActionListener(e -> {
-            AppointmentListPanel listPanel = new AppointmentListPanel(usuarioActual, false);
-            JOptionPane.showMessageDialog(this, listPanel, "Mis Citas", JOptionPane.PLAIN_MESSAGE);
-        });
+        // btnCitasAgendadas.addActionListener(e -> {
+        //     AppointmentListPanel listPanel = new AppointmentListPanel(usuarioActual, false);
+        //     JOptionPane.showMessageDialog(this, listPanel, "Mis Citas", JOptionPane.PLAIN_MESSAGE);
+        // });
 
         centerPanel.add(btnAgendar);
         centerPanel.add(Box.createVerticalStrut(30));

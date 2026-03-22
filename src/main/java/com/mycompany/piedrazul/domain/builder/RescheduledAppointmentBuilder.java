@@ -1,4 +1,4 @@
-package com.mycompany.piedrazul.domain.builder;
+/*package com.mycompany.piedrazul.domain.builder;
 
 import com.mycompany.piedrazul.domain.model.Appointment;
 import com.mycompany.piedrazul.domain.model.AppointmentStatus;
@@ -102,4 +102,4 @@ public class RescheduledAppointmentBuilder extends AppointmentBuilder {
             }
         }
     }
-}
+}*/

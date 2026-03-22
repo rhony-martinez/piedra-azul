@@ -4,10 +4,10 @@
  */
 package com.mycompany.piedrazul.ui;
 
+import com.mycompany.piedrazul.domain.model.Rol;
 import com.mycompany.piedrazul.domain.service.UsuarioService;
 
 import javax.swing.*;
-import javax.swing.text.MaskFormatter;
 import java.awt.*;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
@@ -29,7 +29,7 @@ public class RegistroFrame extends JFrame {
     private JComboBox<String> cmbGenero;
     private JSpinner spinFechaNac;
     private JTextField txtTelefono;
-    private JFormattedTextField txtDni;
+    private JTextField txtDni;
 
     // Datos Usuario
     private JTextField txtUsername;
@@ -143,13 +143,7 @@ public class RegistroFrame extends JFrame {
         centerPanel.add(Box.createVerticalStrut(15));
 
         // DNI
-        try {
-            MaskFormatter dniMask = new MaskFormatter("###########");
-            dniMask.setPlaceholderCharacter('_');
-            txtDni = new JFormattedTextField(dniMask);
-        } catch (Exception e) {
-            txtDni = new JFormattedTextField();
-        }
+        txtDni = crearCampoTexto();
         txtDni.setMaximumSize(new Dimension(Integer.MAX_VALUE, 45));
         txtDni.setBackground(new Color(180, 210, 220));
         txtDni.setBorder(BorderFactory.createLineBorder(new Color(40, 170, 200), 2));
@@ -182,7 +176,7 @@ public class RegistroFrame extends JFrame {
         centerPanel.add(Box.createVerticalStrut(15));
 
         // Rol
-        cmbRol = new JComboBox<>(new String[]{"PACIENTE", "MEDICO", "AGENDADOR", "ADMINISTRADOR"});
+        cmbRol = new JComboBox<>(new String[]{"PACIENTE", "MEDICO_TERAPISTA", "AGENDADOR", "ADMINISTRADOR"});
         cmbRol.setMaximumSize(new Dimension(Integer.MAX_VALUE, 45));
         cmbRol.setBackground(new Color(180, 210, 220));
         cmbRol.setBorder(BorderFactory.createLineBorder(new Color(40, 170, 200), 2));
@@ -259,8 +253,17 @@ public class RegistroFrame extends JFrame {
             JOptionPane.showMessageDialog(this, "Teléfono es obligatorio", "Error", JOptionPane.ERROR_MESSAGE);
             return;
         }
-        if (txtDni.getText().trim().isEmpty() || txtDni.getText().contains("_")) {
-            JOptionPane.showMessageDialog(this, "DNI inválido", "Error", JOptionPane.ERROR_MESSAGE);
+        String dniText = txtDni.getText().trim();
+        if (dniText.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "DNI es obligatorio", "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        if (!dniText.matches("\\d+")) {
+            JOptionPane.showMessageDialog(this, "DNI debe contener solo dígitos", "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        if (dniText.length() < 6 || dniText.length() > 15) {
+            JOptionPane.showMessageDialog(this, "DNI debe tener entre 6 y 15 dígitos", "Error", JOptionPane.ERROR_MESSAGE);
             return;
         }
         if (txtUsername.getText().trim().isEmpty()) {
@@ -281,12 +284,12 @@ public class RegistroFrame extends JFrame {
         LocalDate fechaNac = ((java.util.Date) spinFechaNac.getValue()).toInstant()
                 .atZone(java.time.ZoneId.systemDefault()).toLocalDate();
         String telefono = txtTelefono.getText().trim();
-        int dni = Integer.parseInt(txtDni.getText().replace(" ", ""));
+        int dni = Integer.parseInt(dniText);
         String username = txtUsername.getText().trim();
         String password = new String(txtPassword.getPassword());
         String rol = (String) cmbRol.getSelectedItem();
 
-        // Por ahora solo mostrar los datos (esto se integrará con el backend después)
+        
         StringBuilder mensaje = new StringBuilder("Datos capturados:\n\n");
         mensaje.append("Nombre: ").append(primerNombre).append(" ").append(segundoNombre).append("\n");
         mensaje.append("Apellido: ").append(primerApellido).append(" ").append(segundoApellido).append("\n");
@@ -297,7 +300,60 @@ public class RegistroFrame extends JFrame {
         mensaje.append("Username: ").append(username).append("\n");
         mensaje.append("Rol: ").append(rol).append("\n");
 
-        JOptionPane.showMessageDialog(this, mensaje.toString(), "Validación", JOptionPane.INFORMATION_MESSAGE);
+        //JOptionPane.showMessageDialog(this, mensaje.toString(), "Validación", JOptionPane.INFORMATION_MESSAGE);
+        try {
+            //String nombreCompleto = primerNombre + " " + segundoNombre + " " + primerApellido + " " + segundoApellido;
+
+            boolean creado = usuarioService.registrarUsuario(
+                    username,
+                    password,
+                    mapearRol(rol),
+                    primerNombre,
+                    segundoNombre,
+                    primerApellido,
+                    segundoApellido,
+                    genero,
+                    fechaNac,
+                    telefono,
+                    dni
+            );
+
+            if (creado) {
+                JOptionPane.showMessageDialog(this, "Usuario registrado correctamente", "Éxito", JOptionPane.INFORMATION_MESSAGE);
+                limpiarFormulario();
+            } else {
+                JOptionPane.showMessageDialog(this, "No se pudo registrar el usuario", "Error", JOptionPane.ERROR_MESSAGE);
+            }
+
+        } catch (Exception ex) {
+        JOptionPane.showMessageDialog(this, ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+    
+    private Rol mapearRol(String rolUI) {
+        switch (rolUI) {
+            case "PACIENTE":
+                return Rol.PACIENTE;
+            case "MEDICO_TERAPISTA":
+                return Rol.MEDICO_TERAPISTA;
+            case "AGENDADOR":
+                return Rol.AGENDADOR;
+            case "ADMINISTRADOR":
+                return Rol.ADMINISTRADOR;
+            default:
+                throw new IllegalArgumentException("Rol inválido");
+        }
+    }
+    
+    private void limpiarFormulario() {
+        txtPrimerNombre.setText("");
+        txtSegundoNombre.setText("");
+        txtPrimerApellido.setText("");
+        txtSegundoApellido.setText("");
+        txtTelefono.setText("");
+        txtDni.setText("");
+        txtUsername.setText("");
+        txtPassword.setText("");
     }
 }
 

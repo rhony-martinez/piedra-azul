@@ -1,4 +1,4 @@
-package com.mycompany.piedrazul.domain.builder;
+/*package com.mycompany.piedrazul.domain.builder;
 
 import com.mycompany.piedrazul.domain.model.AppointmentStatus;
 import com.mycompany.piedrazul.domain.model.Usuario;
@@ -85,4 +85,4 @@ public class SelfServiceAppointmentBuilder extends AppointmentBuilder {
             }
         }
     }
-}
+}*/
