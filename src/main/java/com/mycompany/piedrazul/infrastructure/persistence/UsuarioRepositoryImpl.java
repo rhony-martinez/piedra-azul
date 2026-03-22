@@ -10,42 +10,6 @@ import java.util.List;
 
 public class UsuarioRepositoryImpl implements IUsuarioRepository {
     
-    /*private void createTableIfNotExists(Connection conn) {
-        String sql = "CREATE TABLE IF NOT EXISTS usuarios ("
-                + "id INTEGER PRIMARY KEY AUTOINCREMENT,"
-                + "username TEXT UNIQUE NOT NULL,"
-                + "password_hash TEXT NOT NULL,"
-                + "nombre_completo TEXT NOT NULL,"
-                + "rol TEXT NOT NULL,"
-                + "activo INTEGER DEFAULT 1,"
-                + "intentos_fallidos INTEGER DEFAULT 0"
-                + ")";
-        
-        String sqlCitas = "CREATE TABLE IF NOT EXISTS citas ("
-                + "id INTEGER PRIMARY KEY AUTOINCREMENT,"
-                + "patient_id INTEGER NOT NULL,"
-                + "professional_id INTEGER NOT NULL,"
-                + "date_time TEXT NOT NULL,"
-                + "appointment_type TEXT NOT NULL,"
-                + "status TEXT NOT NULL,"
-                + "reason TEXT,"
-                + "notes TEXT,"
-                + "created_by_id INTEGER NOT NULL,"
-                + "created_at TEXT NOT NULL,"
-                + "original_appointment_id INTEGER,"
-                + "FOREIGN KEY (patient_id) REFERENCES usuarios(id),"
-                + "FOREIGN KEY (professional_id) REFERENCES usuarios(id),"
-                + "FOREIGN KEY (created_by_id) REFERENCES usuarios(id),"
-                + "FOREIGN KEY (original_appointment_id) REFERENCES citas(id)"
-                + ")";
-        
-        try (Statement stmt = conn.createStatement()) {
-            stmt.execute(sql);
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }*/
-    
     @Override
     public Usuario findByUsername(String username) {
 
@@ -158,7 +122,7 @@ public class UsuarioRepositoryImpl implements IUsuarioRepository {
     @Override
     public List<Usuario> findAll() {
         List<Usuario> usuarios = new ArrayList<>();
-        String sql = "SELECT * FROM usuarios ORDER BY id";
+        String sql = "SELECT * FROM Usuario ORDER BY usu_id";
         
         try (Connection conn = ConnectionFactory.getConnection();
             Statement stmt = conn.createStatement();
@@ -175,7 +139,7 @@ public class UsuarioRepositoryImpl implements IUsuarioRepository {
     
     @Override
     public boolean deactivate(int id) {
-        String sql = "UPDATE usuarios SET activo = 0 WHERE id = ?";
+        String sql = "UPDATE Usuario SET activo = 0 WHERE id = ?";
         
         try (Connection conn = ConnectionFactory.getConnection();
             PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -210,7 +174,7 @@ public class UsuarioRepositoryImpl implements IUsuarioRepository {
     
     @Override
     public void registrarIntentoFallido(String username) {
-        String sql = "UPDATE usuarios SET intentos_fallidos = intentos_fallidos + 1 WHERE username = ?";
+        String sql = "UPDATE Usuario SET intentos_fallidos = intentos_fallidos + 1 WHERE username = ?";
         
         try (Connection conn = ConnectionFactory.getConnection();
             PreparedStatement stmt = conn.prepareStatement(sql)) {

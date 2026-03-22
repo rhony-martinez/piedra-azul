@@ -131,20 +131,13 @@ public class UsuarioService {
                     throw new RuntimeException("Error al crear médico");
                 }
             }
-            
+
             default -> {
                 // ADMINISTRADOR y AGENDADOR no hacen nada aquí
             }
         }
         return true;
     }
-    /*private boolean esRolValido(Rol rol) {
-        return rol != null && (
-            rol == "PACIENTE" || 
-            rol == "MEDICO_TERAPISTA" || 
-            rol == "AGENDADOR"
-        );
-    }*/
     
     public List<Usuario> obtenerTodosLosPacientes() {
         List<Usuario> todos = usuarioRepository.findAll();
