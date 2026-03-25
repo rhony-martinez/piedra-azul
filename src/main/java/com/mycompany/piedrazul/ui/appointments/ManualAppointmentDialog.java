@@ -298,6 +298,8 @@ public class ManualAppointmentDialog extends JDialog {
                     selectedDate.toInstant(),
                     ZoneId.systemDefault()).withHour(Integer.parseInt(hora.split(":")[0]))
                     .withMinute(0);
+            
+            fechaHora = normalizarHora(fechaHora);
 
             Appointment cita = appointmentService.crearCitaManual(
                     paciente,
@@ -461,5 +463,9 @@ public class ManualAppointmentDialog extends JDialog {
 
         dateNacimiento.setBorder(defaultBorder);
         dateChooser.setBorder(defaultBorder);
+    }
+
+    private LocalDateTime normalizarHora(LocalDateTime fecha) {
+        return fecha.withSecond(0).withNano(0);
     }
 }

@@ -21,7 +21,8 @@ public class AppointmentRepositoryImpl implements IAppointmentRepository {
     private final IMedicoRepository medicoRepository;
     private final DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
 
-    public AppointmentRepositoryImpl(IUsuarioRepository usuarioRepository, IPacienteRepository pacienteRepository, IMedicoRepository medicoRepository) {
+    public AppointmentRepositoryImpl(IUsuarioRepository usuarioRepository, IPacienteRepository pacienteRepository,
+            IMedicoRepository medicoRepository) {
         this.usuarioRepository = usuarioRepository;
         this.pacienteRepository = pacienteRepository;
         this.medicoRepository = medicoRepository;
@@ -293,5 +294,28 @@ public class AppointmentRepositoryImpl implements IAppointmentRepository {
         } catch (SQLException e) {
             throw new RuntimeException("Error validando cita", e);
         }
+    }
+
+    @Override
+    public boolean existsByMedicoAndFecha(int medicoId, LocalDateTime fechaHora) {
+        String sql = "SELECT COUNT(*) FROM Cita WHERE medico_id = ? AND fecha_hora_cita = ?";
+
+        try (Connection conn = ConnectionFactory.getConnection();
+                PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, medicoId);
+            stmt.setTimestamp(2, Timestamp.valueOf(fechaHora));
+
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                return rs.getInt(1) > 0;
+            }
+
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+
+        return false;
     }
 }

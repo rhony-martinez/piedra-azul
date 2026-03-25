@@ -17,4 +17,5 @@ public interface IAppointmentRepository {
     boolean cancel(int id);
     boolean delete(int id);
     boolean existsByPacienteAndFecha(int pacienteId, LocalDateTime fechaHora);
+    boolean existsByMedicoAndFecha(int medicoId, LocalDateTime fechaHora);
 }
