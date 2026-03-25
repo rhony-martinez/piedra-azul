@@ -23,6 +23,8 @@ import com.mycompany.piedrazul.infrastructure.persistence.PersonaRepositoryImpl;
 import com.mycompany.piedrazul.main.Piedrazul;
 import com.toedter.calendar.JDateChooser;
 import javax.swing.*;
+import javax.swing.border.Border;
+
 import java.awt.*;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -244,6 +246,8 @@ public class ManualAppointmentDialog extends JDialog {
     }
 
     private void guardarCita() {
+        if (!validarCampos())
+            return;
         try {
 
             int dni = Integer.parseInt(txtDni.getText().trim());
@@ -366,5 +370,96 @@ public class ManualAppointmentDialog extends JDialog {
         txtCorreo.setEnabled(!bloquear);
         cmbGenero.setEnabled(!bloquear);
         dateNacimiento.setEnabled(!bloquear);
+    }
+
+    private boolean validarCampos() {
+
+        boolean valido = true;
+
+        limpiarErrores();
+
+        // ===== DNI =====
+        if (txtDni.getText().trim().isEmpty()) {
+            marcarError(txtDni);
+            valido = false;
+        }
+
+        // ===== NOMBRE =====
+        if (txtPrimerNombre.getText().trim().isEmpty()) {
+            marcarError(txtPrimerNombre);
+            valido = false;
+        }
+
+        // ===== APELLIDO =====
+        if (txtPrimerApellido.getText().trim().isEmpty()) {
+            marcarError(txtPrimerApellido);
+            valido = false;
+        }
+
+        // ===== GENERO =====
+        if (cmbGenero.getSelectedItem() == null) {
+            marcarError(cmbGenero);
+            valido = false;
+        }
+
+        // ===== FECHA NACIMIENTO =====
+        if (dateNacimiento.getDate() == null) {
+            marcarError(dateNacimiento);
+            valido = false;
+        }
+
+        // ===== TELEFONO =====
+        if (txtTelefono.getText().trim().isEmpty()) {
+            marcarError(txtTelefono);
+            valido = false;
+        }
+
+        // ===== MEDICO =====
+        if (cmbMedicos.getSelectedItem() == null) {
+            marcarError(cmbMedicos);
+            valido = false;
+        }
+
+        // ===== FECHA CITA =====
+        if (dateChooser.getDate() == null) {
+            marcarError(dateChooser);
+            valido = false;
+        }
+
+        // ===== HORA =====
+        if (cmbHora.getSelectedItem() == null) {
+            marcarError(cmbHora);
+            valido = false;
+        }
+
+        if (!valido) {
+            JOptionPane.showMessageDialog(this,
+                    "Por favor complete los campos obligatorios",
+                    "Validación",
+                    JOptionPane.WARNING_MESSAGE);
+        }
+
+        return valido;
+    }
+
+    private void marcarError(JComponent comp) {
+        comp.setBorder(BorderFactory.createLineBorder(Color.RED, 2));
+    }
+
+    private void limpiarErrores() {
+
+        Border defaultBorder = UIManager.getLookAndFeel().getDefaults().getBorder("TextField.border");
+
+        txtDni.setBorder(defaultBorder);
+        txtPrimerNombre.setBorder(defaultBorder);
+        txtPrimerApellido.setBorder(defaultBorder);
+        txtTelefono.setBorder(defaultBorder);
+
+        cmbGenero.setBorder(defaultBorder);
+        cmbMedicos.setBorder(defaultBorder);
+        cmbHora.setBorder(defaultBorder);
+
+        dateNacimiento.setBorder(defaultBorder);
+        dateChooser.setBorder(defaultBorder);
     }
 }
