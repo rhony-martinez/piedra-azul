@@ -1,7 +1,10 @@
 package com.mycompany.piedrazul.domain.service;
 import com.mycompany.piedrazul.domain.model.AppointmentStatus;
+import com.mycompany.piedrazul.domain.builder.AppointmentDirector;
 import com.mycompany.piedrazul.domain.builder.ManualAppointmentBuilder;
 import com.mycompany.piedrazul.domain.model.Appointment;
+import com.mycompany.piedrazul.domain.model.Medico;
+import com.mycompany.piedrazul.domain.model.Paciente;
 import com.mycompany.piedrazul.domain.model.Usuario;
 import com.mycompany.piedrazul.domain.repository.IAppointmentRepository;
 
@@ -20,13 +23,13 @@ public class AppointmentService {
         if (appointment == null) {
             throw new IllegalArgumentException("La cita no puede ser nula");
         }
-        if (appointment.getPatient() == null || appointment.getPatient().getId() <= 0) {
+        if (appointment.getPaciente() == null || appointment.getPaciente().getId() <= 0) {
             throw new IllegalArgumentException("Paciente inválido");
         }
-        if (appointment.getProfessional() == null || appointment.getProfessional().getId() <= 0) {
+        if (appointment.getMedico() == null || appointment.getMedico().getId() <= 0) {
             throw new IllegalArgumentException("Profesional inválido");
         }
-        if (appointment.getDateTime() == null) {
+        if (appointment.getFechaHora() == null) {
             throw new IllegalArgumentException("Fecha y hora requeridas");
         }
 
@@ -49,25 +52,25 @@ public class AppointmentService {
         return appointmentRepository.findHistory(usuario);
     }
 
-    public boolean confirmarCita(int id) {
+    /*public boolean confirmarCita(int id) {
         Appointment cita = appointmentRepository.findById(id);
         if (cita != null) {
             cita.setStatus(AppointmentStatus.CONFIRMED);
             return appointmentRepository.update(cita);
         }
         return false;
-    }
+    }*/
 
     public boolean cancelarCita(int id) {
         return appointmentRepository.cancel(id);
     }
 
-    public boolean reprogramarCita(Appointment nuevaCita) {
+    /*public boolean reprogramarCita(Appointment nuevaCita) {
         if (nuevaCita.getOriginalAppointment() == null) {
             throw new IllegalArgumentException("Debe especificar la cita original");
         }
         return appointmentRepository.save(nuevaCita) != null;
-    }
+    }*/
 
     public Appointment crearCitaManual(
             Paciente paciente,
@@ -76,36 +79,18 @@ public class AppointmentService {
             Usuario usuarioCreador,
             String observacion) {
 
-        // 1. Validar fecha límite
-        if (fechaHora.isAfter(LocalDateTime.now().plusMonths(3))) {
-            throw new IllegalArgumentException("No puede agendar una cita más allá de 3 meses");
-        }
-
-        // 2. Validar solapamiento paciente
-        boolean pacienteOcupado = appointmentRepository
-                .existsByPacienteAndFecha(paciente.getId(), fechaHora);
-
-        if (pacienteOcupado) {
-            throw new IllegalArgumentException(
-                    "El paciente ya tiene una cita en ese horario");
-        }
-
-        // 3. Construcción con Builder
+        AppointmentDirector director = new AppointmentDirector();
         ManualAppointmentBuilder builder = new ManualAppointmentBuilder();
-        builder.crearNueva();
-        builder.buildPaciente(paciente);
-        builder.buildMedico(medico);
-        builder.buildFechaHora(fechaHora);
-        builder.buildCreadoPor(usuarioCreador);
-        builder.buildObservacion(observacion);
 
-        Appointment cita = builder.getResult();
+        director.setBuilder(builder);
 
-        // 4. Guardar (maneja simultaneidad)
-        try {
-            return appointmentRepository.save(cita);
-        } catch (Exception e) {
-            throw new IllegalArgumentException("Horario no disponible");
-        }
+        Appointment cita = director.buildManualAppointment(
+                paciente,
+                medico,
+                fechaHora,
+                usuarioCreador,
+                observacion);
+
+        return appointmentRepository.save(cita);
     }
 }

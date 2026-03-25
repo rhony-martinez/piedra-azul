@@ -16,43 +16,16 @@ import java.util.List;
 
 public class AppointmentRepositoryImpl implements IAppointmentRepository {
 
-    // private final UsuarioRepositoryImpl usuarioRepository;
     private final IUsuarioRepository usuarioRepository;
     private final IPacienteRepository pacienteRepository;
     private final IMedicoRepository medicoRepository;
     private final DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
 
-    public AppointmentRepositoryImpl(IUsuarioRepository usuarioRepository) {
+    public AppointmentRepositoryImpl(IUsuarioRepository usuarioRepository, IPacienteRepository pacienteRepository, IMedicoRepository medicoRepository) {
         this.usuarioRepository = usuarioRepository;
+        this.pacienteRepository = pacienteRepository;
+        this.medicoRepository = medicoRepository;
     }
-
-    /*
-     * private void crearTablaSiNoExiste() {
-     * String sql = "CREATE TABLE IF NOT EXISTS citas ("
-     * + "id INTEGER PRIMARY KEY AUTOINCREMENT,"
-     * + "patient_id INTEGER NOT NULL,"
-     * + "professional_id INTEGER NOT NULL,"
-     * + "date_time TEXT NOT NULL,"
-     * + "appointment_type TEXT NOT NULL,"
-     * + "status TEXT NOT NULL,"
-     * + "reason TEXT,"
-     * + "notes TEXT,"
-     * + "created_by_id INTEGER NOT NULL,"
-     * + "created_at TEXT NOT NULL,"
-     * + "original_appointment_id INTEGER,"
-     * + "FOREIGN KEY (patient_id) REFERENCES usuarios(id),"
-     * + "FOREIGN KEY (professional_id) REFERENCES usuarios(id),"
-     * + "FOREIGN KEY (created_by_id) REFERENCES usuarios(id)"
-     * + ")";
-     * 
-     * try (Connection conn = getConnection();
-     * Statement stmt = conn.createStatement()) {
-     * stmt.execute(sql);
-     * } catch (SQLException e) {
-     * e.printStackTrace();
-     * }
-     * }
-     */
 
     @Override
     public Appointment save(Appointment appointment) {
@@ -103,7 +76,7 @@ public class AppointmentRepositoryImpl implements IAppointmentRepository {
             ResultSet rs = stmt.executeQuery();
 
             if (rs.next()) {
-                return mapResultSetToAppointment(rs);
+                return map(rs);
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -132,7 +105,7 @@ public class AppointmentRepositoryImpl implements IAppointmentRepository {
             ResultSet rs = stmt.executeQuery();
 
             while (rs.next()) {
-                appointments.add(mapResultSetToAppointment(rs));
+                appointments.add(map(rs));
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -150,7 +123,7 @@ public class AppointmentRepositoryImpl implements IAppointmentRepository {
                 ResultSet rs = stmt.executeQuery(sql)) {
 
             while (rs.next()) {
-                appointments.add(mapResultSetToAppointment(rs));
+                appointments.add(map(rs));
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -177,7 +150,7 @@ public class AppointmentRepositoryImpl implements IAppointmentRepository {
             ResultSet rs = stmt.executeQuery();
 
             while (rs.next()) {
-                appointments.add(mapResultSetToAppointment(rs));
+                appointments.add(map(rs));
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -204,7 +177,7 @@ public class AppointmentRepositoryImpl implements IAppointmentRepository {
             ResultSet rs = stmt.executeQuery();
 
             while (rs.next()) {
-                appointments.add(mapResultSetToAppointment(rs));
+                appointments.add(map(rs));
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -217,12 +190,12 @@ public class AppointmentRepositoryImpl implements IAppointmentRepository {
         String sql = "UPDATE citas SET date_time = ?, status = ?, notes = ? WHERE id = ?";
         try (Connection conn = ConnectionFactory.getConnection();
                 PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setString(1, appointment.getDateTime().format(formatter));
-            stmt.setString(2, appointment.getStatus().name());
-            stmt.setString(3, appointment.getNotes());
+            stmt.setString(1, appointment.getFechaHora().format(formatter));
+            stmt.setString(2, appointment.getEstado().name());
+            stmt.setString(3, appointment.getObservacion());
             stmt.setInt(4, appointment.getId());
             int affected = stmt.executeUpdate();
-            System.out.println("Actualizando cita " + appointment.getId() + " a estado: " + appointment.getStatus());
+            System.out.println("Actualizando cita " + appointment.getId() + " a estado: " + appointment.getEstado());
             return affected > 0;
         } catch (SQLException e) {
             e.printStackTrace();
@@ -292,7 +265,7 @@ public class AppointmentRepositoryImpl implements IAppointmentRepository {
             stmt.setInt(1, createdBy.getId());
             ResultSet rs = stmt.executeQuery();
             while (rs.next()) {
-                appointments.add(mapResultSetToAppointment(rs));
+                appointments.add(map(rs));
             }
         } catch (SQLException e) {
             e.printStackTrace();

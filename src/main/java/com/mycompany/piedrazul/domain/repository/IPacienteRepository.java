@@ -4,10 +4,17 @@
  */
 package com.mycompany.piedrazul.domain.repository;
 
+import java.util.List;
+
+import com.mycompany.piedrazul.domain.model.Paciente;
+
 /**
  *
  * @author asus
  */
 public interface IPacienteRepository {
     boolean create(int personaId);
+    public Paciente findById(int id);
+    public Paciente findByDni(int dni);
+    public List<Paciente> findAll();
 }

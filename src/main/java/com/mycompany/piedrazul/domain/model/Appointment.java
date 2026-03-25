@@ -83,21 +83,20 @@ public class Appointment {
         this.creadoEn = creadoEn;
     }
     
-    public Appointment getOriginalAppointment() { return originalAppointment; }
+    /*public Appointment getOriginalAppointment() { return originalAppointment; }
     public void setOriginalAppointment(Appointment originalAppointment) { 
         this.originalAppointment = originalAppointment; 
-    }
+    }*/
     
     @Override
     public String toString() {
         return "Appointment{" +
                 "id=" + id +
-                ", patient=" + (patient != null ? patient.getNombreCompleto() : "null") +
-                ", professional=" + (professional != null ? professional.getNombreCompleto() : "null") +
-                ", dateTime=" + dateTime +
-                ", type='" + appointmentType + '\'' +
-                ", status=" + status +
-                ", reason='" + reason + '\'' +
+                ", paciente=" + (paciente != null ? paciente.getPrimerNombre() + paciente.getPrimerApellido() : "null") +
+                ", medico=" + (medico != null ? medico.getPrimerNombre() + medico.getPrimerApellido() : "null") +
+                ", fechaHora=" + fechaHora +
+                ", estado=" + estado +
+                ", oservacion='" + observacion + '\'' +
                 '}';
     }
 }

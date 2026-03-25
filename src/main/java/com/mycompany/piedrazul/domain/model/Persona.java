@@ -19,13 +19,14 @@ public class Persona {
     private LocalDate fechaNacimiento;
     private String telefono;
     private int dni;
+    private String correo;
 
     public Persona() {}
 
     public Persona(String primerNombre, String segundoNombre,
                    String primerApellido, String segundoApellido,
                    String genero, LocalDate fechaNacimiento,
-                   String telefono, int dni) {
+                   String telefono, int dni, String correo) {
         this.primerNombre = primerNombre;
         this.segundoNombre = segundoNombre;
         this.primerApellido = primerApellido;
@@ -34,6 +35,7 @@ public class Persona {
         this.fechaNacimiento = fechaNacimiento;
         this.telefono = telefono;
         this.dni = dni;
+        this.correo = correo;
     }
 
     public int getId() {
@@ -106,6 +108,14 @@ public class Persona {
 
     public void setDni(int dni) {
         this.dni = dni;
+    }
+
+    public String getCorreo() {
+        return correo;
+    }
+
+    public void setCorreo(String correo) {
+        this.correo = correo;
     }
     
 }

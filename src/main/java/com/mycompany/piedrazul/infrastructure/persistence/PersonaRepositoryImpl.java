@@ -19,8 +19,8 @@ public class PersonaRepositoryImpl implements IPersonaRepository {
     @Override
     public Persona create(Persona persona) {
 
-        String sql = "INSERT INTO persona (per_primer_nombre, per_segundo_nombre, per_primer_apellido, per_segundo_apellido, per_genero, per_fecha_nac, per_telefono, per_dni) "
-                + "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO persona (per_primer_nombre, per_segundo_nombre, per_primer_apellido, per_segundo_apellido, per_genero, per_fecha_nac, per_telefono, per_dni, per_correo) "
+                + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         try (Connection conn = ConnectionFactory.getConnection();
             PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
@@ -33,6 +33,7 @@ public class PersonaRepositoryImpl implements IPersonaRepository {
             stmt.setDate(6, Date.valueOf(persona.getFechaNacimiento()));
             stmt.setString(7, persona.getTelefono());
             stmt.setInt(8, persona.getDni());
+            stmt.setString(9, persona.getCorreo());
 
             stmt.executeUpdate();
 

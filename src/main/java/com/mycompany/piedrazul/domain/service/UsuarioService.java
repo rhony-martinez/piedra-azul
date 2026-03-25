@@ -67,7 +67,8 @@ public class UsuarioService {
         String genero,
         LocalDate fechaNac,
         String telefono,
-        int dni
+        int dni,
+        String correo
     ) {
 
         // Validaciones
@@ -88,7 +89,8 @@ public class UsuarioService {
                 genero,
                 fechaNac,
                 telefono,
-                dni
+                dni,
+                correo
         );
 
         persona = personaRepository.create(persona);

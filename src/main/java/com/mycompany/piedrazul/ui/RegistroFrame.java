@@ -30,6 +30,7 @@ public class RegistroFrame extends JFrame {
     private JSpinner spinFechaNac;
     private JTextField txtTelefono;
     private JTextField txtDni;
+    private JTextField txtCorreo;
 
     // Datos Usuario
     private JTextField txtUsername;
@@ -116,7 +117,7 @@ public class RegistroFrame extends JFrame {
         centerPanel.add(Box.createVerticalStrut(15));
 
         // Género
-        cmbGenero = new JComboBox<>(new String[]{"HOMBRE", "MUJER"});
+        cmbGenero = new JComboBox<>(new String[]{"HOMBRE", "MUJER", "OTRO"});
         cmbGenero.setMaximumSize(new Dimension(Integer.MAX_VALUE, 45));
         cmbGenero.setBackground(new Color(180, 210, 220));
         cmbGenero.setBorder(BorderFactory.createLineBorder(new Color(40, 170, 200), 2));
@@ -151,6 +152,13 @@ public class RegistroFrame extends JFrame {
         centerPanel.add(Box.createVerticalStrut(3));
         centerPanel.add(txtDni);
         centerPanel.add(Box.createVerticalStrut(25));
+        
+        // Teléfono
+        txtCorreo = crearCampoTexto();
+        centerPanel.add(crearLabel("Correo electrónico "));
+        centerPanel.add(Box.createVerticalStrut(3));
+        centerPanel.add(txtCorreo);
+        centerPanel.add(Box.createVerticalStrut(15));
 
         // ===== SECCIÓN DATOS DE USUARIO =====
         JLabel lblSeccionUsuario = crearLabel("DATOS DE ACCESO");
@@ -285,9 +293,11 @@ public class RegistroFrame extends JFrame {
                 .atZone(java.time.ZoneId.systemDefault()).toLocalDate();
         String telefono = txtTelefono.getText().trim();
         int dni = Integer.parseInt(dniText);
+        String correo = txtCorreo.getText().trim();
         String username = txtUsername.getText().trim();
         String password = new String(txtPassword.getPassword());
         String rol = (String) cmbRol.getSelectedItem();
+        
 
         
         StringBuilder mensaje = new StringBuilder("Datos capturados:\n\n");
@@ -297,6 +307,7 @@ public class RegistroFrame extends JFrame {
         mensaje.append("Fecha Nac: ").append(fechaNac).append("\n");
         mensaje.append("Teléfono: ").append(telefono).append("\n");
         mensaje.append("DNI: ").append(dni).append("\n");
+        mensaje.append("Correo: ").append(correo).append("\n");
         mensaje.append("Username: ").append(username).append("\n");
         mensaje.append("Rol: ").append(rol).append("\n");
 
@@ -315,7 +326,8 @@ public class RegistroFrame extends JFrame {
                     genero,
                     fechaNac,
                     telefono,
-                    dni
+                    dni,
+                    correo
             );
 
             if (creado) {

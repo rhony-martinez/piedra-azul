@@ -1,6 +1,7 @@
 package com.mycompany.piedrazul.ui.panel;
 
 import com.mycompany.piedrazul.domain.model.Usuario;
+import com.mycompany.piedrazul.ui.appointments.ManualAppointmentDialog;
 // import com.mycompany.piedrazul.ui.appointments.AppointmentListPanel;
 // import com.mycompany.piedrazul.ui.appointments.ManualAppointmentDialog;
 import javax.swing.*;
@@ -28,14 +29,14 @@ public class AgendadorPanel extends JPanel {
         JButton btnCitasAgendadas = crearBoton("CITAS AGENDADAS");
         JButton btnHistorial = crearBoton("HISTORIAL DE CITAS");
 
-        // Acciones
-        // btnAgendar.addActionListener(e -> {
-        //     ManualAppointmentDialog dialog = new ManualAppointmentDialog(
-        //         (JFrame) SwingUtilities.getWindowAncestor(this), 
-        //         usuarioActual
-        //     );
-        //     dialog.setVisible(true);
-        // });
+        //Acciones
+        btnAgendar.addActionListener(e -> {
+            ManualAppointmentDialog dialog = new ManualAppointmentDialog(
+                (JFrame) SwingUtilities.getWindowAncestor(this), 
+                usuarioActual
+            );
+            dialog.setVisible(true);
+        });
 
         // btnCitasAgendadas.addActionListener(e -> {
         //     AppointmentListPanel listPanel = new AppointmentListPanel(usuarioActual, false);
