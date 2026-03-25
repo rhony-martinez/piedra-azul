@@ -10,6 +10,7 @@ import com.mycompany.piedrazul.infrastructure.persistence.connection.ConnectionF
 
 import java.sql.*;
 import java.time.LocalDate;
+
 /**
  *
  * @author asus
@@ -23,7 +24,7 @@ public class PersonaRepositoryImpl implements IPersonaRepository {
                 + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         try (Connection conn = ConnectionFactory.getConnection();
-            PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+                PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
             stmt.setString(1, persona.getPrimerNombre());
             stmt.setString(2, persona.getSegundoNombre());
@@ -54,7 +55,7 @@ public class PersonaRepositoryImpl implements IPersonaRepository {
         String sql = "SELECT * FROM persona WHERE per_id = ?";
 
         try (Connection conn = ConnectionFactory.getConnection();
-            PreparedStatement stmt = conn.prepareStatement(sql)) {
+                PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setInt(1, id);
             ResultSet rs = stmt.executeQuery();
@@ -83,7 +84,7 @@ public class PersonaRepositoryImpl implements IPersonaRepository {
         String sql = "SELECT COUNT(*) FROM persona WHERE per_dni = ?";
 
         try (Connection conn = ConnectionFactory.getConnection();
-            PreparedStatement stmt = conn.prepareStatement(sql)) {
+                PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setInt(1, dni);
             ResultSet rs = stmt.executeQuery();
@@ -97,5 +98,38 @@ public class PersonaRepositoryImpl implements IPersonaRepository {
         }
 
         return false;
+    }
+
+    @Override
+    public Persona findByDni(int dni) {
+
+        String sql = "SELECT * FROM persona WHERE per_dni = ?";
+
+        try (Connection conn = ConnectionFactory.getConnection();
+                PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, dni);
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                Persona p = new Persona();
+                p.setId(rs.getInt("per_id"));
+                p.setPrimerNombre(rs.getString("per_primer_nombre"));
+                p.setSegundoNombre(rs.getString("per_segundo_nombre"));
+                p.setPrimerApellido(rs.getString("per_primer_apellido"));
+                p.setSegundoApellido(rs.getString("per_segundo_apellido"));
+                p.setGenero(rs.getString("per_genero"));
+                p.setTelefono(rs.getString("per_telefono"));
+                p.setCorreo(rs.getString("per_correo"));
+                p.setFechaNacimiento(rs.getDate("per_fecha_nac").toLocalDate());
+                p.setDni(rs.getInt("per_dni"));
+                return p;
+            }
+
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+
+        return null;
     }
 }
