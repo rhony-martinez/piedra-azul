@@ -4,12 +4,14 @@ import com.mycompany.piedrazul.domain.model.Usuario;
 import com.mycompany.piedrazul.domain.service.UsuarioService;
 import com.mycompany.piedrazul.ui.panel.*;
 import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Font;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.SwingConstants;
 
 public class MenuPrincipalFrame extends JFrame {
 
@@ -24,50 +26,78 @@ public class MenuPrincipalFrame extends JFrame {
     }
 
     private void initComponents() {
-
         setTitle("PIEDRAZUL - Menú principal");
-        setSize(800, 600);
-        setLocationRelativeTo(null);
+        setExtendedState(JFrame.MAXIMIZED_BOTH);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
 
         JPanel mainPanel = new JPanel(new BorderLayout());
+        mainPanel.setBackground(Color.WHITE);
 
-        // Header
-        JLabel lblHeader = new JLabel(
-            "Bienvenido: " + usuario.getUsername()
-            + " - " + usuario.getRol(),
-            SwingConstants.CENTER
-        );
+        // ==============================
+        // Barra superior turquesa con logo y botón cerrar
+        // ==============================
+        JPanel topBar = new JPanel(new BorderLayout());
+        topBar.setBackground(new Color(40, 170, 200));
+        topBar.setPreferredSize(new Dimension(800, 80));
+        topBar.setBorder(BorderFactory.createEmptyBorder(0, 40, 0, 40));
 
-        lblHeader.setBorder(BorderFactory.createEmptyBorder(15, 10, 15, 10));
-
-        mainPanel.add(lblHeader, BorderLayout.NORTH);
-
-        // Panel dinámico por rol (ahora pasamos el usuario)
-        mainPanel.add(obtenerPanelPorRol(), BorderLayout.CENTER);
-
-        // Botón cerrar sesión
+        JLabel lblTitulo = new JLabel("PIEDRAZUL");
+        lblTitulo.setFont(new Font("Segoe UI", Font.BOLD | Font.ITALIC, 32));
+        lblTitulo.setForeground(Color.WHITE);
+        
         btnCerrar = new JButton("Cerrar sesión");
-
+        btnCerrar.setBackground(new Color(244, 67, 54));
+        btnCerrar.setForeground(Color.WHITE);
+        btnCerrar.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        btnCerrar.setFocusPainted(false);
+        btnCerrar.setPreferredSize(new Dimension(130, 40));
+        btnCerrar.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        
         btnCerrar.addActionListener(e -> {
             new LoginFrame(usuarioService).setVisible(true);
             this.dispose();
         });
-
-        JPanel southPanel = new JPanel();
-        southPanel.add(btnCerrar);
-
-        mainPanel.add(southPanel, BorderLayout.SOUTH);
-
+        
+        topBar.add(lblTitulo, BorderLayout.WEST);
+        topBar.add(btnCerrar, BorderLayout.EAST);
+        
+        // ==============================
+        // Panel central con el contenido según rol
+        // ==============================
+        JPanel contentPanel = obtenerPanelPorRol();
+        
+        mainPanel.add(topBar, BorderLayout.NORTH);
+        mainPanel.add(contentPanel, BorderLayout.CENTER);
+        
         add(mainPanel);
     }
 
     private JPanel obtenerPanelPorRol() {
-        return switch (usuario.getRol()) {
-            case ADMINISTRADOR -> new AdminPanel();
-            case MEDICO_TERAPISTA -> new MedicoPanel(usuario);
-            case PACIENTE -> new PacientePanel(usuario);
-            case AGENDADOR -> new AgendadorPanel(usuario);
-        };
+        JPanel wrapper = new JPanel(new BorderLayout());
+        wrapper.setBackground(Color.WHITE);
+        
+        JPanel content;
+        switch (usuario.getRol()) {
+            case ADMINISTRADOR:
+                content = new AdminPanel();
+                break;
+            case MEDICO_TERAPISTA:
+                content = new MedicoPanel(usuario);
+                break;
+            case PACIENTE:
+                content = new PacientePanel(usuario);
+                break;
+            case AGENDADOR:
+                AgendadorPanel agendadorPanel = new AgendadorPanel(usuario);
+                agendadorPanel.setParentFrame(this);
+                content = agendadorPanel;
+                break;
+            default:
+                content = new JPanel();
+                content.setBackground(Color.WHITE);
+        }
+        
+        wrapper.add(content, BorderLayout.CENTER);
+        return wrapper;
     }
 }

@@ -55,7 +55,7 @@ public class UsuarioService {
         }
     }
     
-    // Registrar un usuario    
+    // Registrar un usuario (con correo)
     public boolean registrarUsuario(
         String username,
         String password,
@@ -71,6 +71,12 @@ public class UsuarioService {
         String correo
     ) {
 
+        System.out.println("=== UsuarioService.registrarUsuario ===");
+        System.out.println("Username: " + username);
+        System.out.println("Rol: " + rol);
+        System.out.println("DNI: " + dni);
+        System.out.println("Correo: " + (correo == null ? "null" : correo));
+        
         // Validaciones
         if (usuarioRepository.usernameExists(username)) {
             throw new IllegalArgumentException("El username ya existe");
@@ -80,7 +86,9 @@ public class UsuarioService {
             throw new IllegalArgumentException("El DNI ya está registrado");
         }
 
-        // 1. Crear Persona
+        // 1. Crear Persona (con correo)
+        String correoFinal = (correo == null || correo.trim().isEmpty()) ? "" : correo;
+        
         Persona persona = new Persona(
                 primerNombre,
                 segundoNombre,
@@ -90,17 +98,20 @@ public class UsuarioService {
                 fechaNac,
                 telefono,
                 dni,
-                correo
+                correoFinal
         );
 
+        System.out.println("Creando persona...");
         persona = personaRepository.create(persona);
 
         if (persona == null || persona.getId() == 0) {
             throw new RuntimeException("Error al crear persona");
         }
+        System.out.println("Persona creada con ID: " + persona.getId());
 
         // 2. Crear Usuario
         String passwordHash = PasswordUtils.hashPassword(password);
+        System.out.println("Password hasheada correctamente");
 
         Usuario usuario = new Usuario();
         usuario.setUsername(username);
@@ -110,34 +121,41 @@ public class UsuarioService {
         usuario.setIntentosFallidos(0);
         usuario.setRol(rol);
 
+        System.out.println("Creando usuario...");
         boolean creadoUsuario = usuarioRepository.create(usuario);
 
         if (!creadoUsuario) {
             throw new RuntimeException("Error al crear usuario");
         }
+        System.out.println("Usuario creado correctamente");
 
+        // 3. Crear registros específicos según rol
         switch (rol) {
             case PACIENTE -> {
+                System.out.println("Creando registro de paciente...");
                 boolean creadoPaciente = pacienteRepository.create(persona.getId());
                 if (!creadoPaciente) {
                     throw new RuntimeException("Error al crear paciente");
                 }
+                System.out.println("Paciente creado correctamente");
             }
         
             case MEDICO_TERAPISTA -> {
-                //! Decidir si es MEDICO o TERAPISTA
-                String tipo = "MEDICO"; // por ahora fijo, luego hacerlo dinámico
-            
+                System.out.println("Creando registro de médico...");
+                String tipo = "MEDICO";
                 boolean creadoMedico = medicoRepository.create(persona.getId(), tipo);
                 if (!creadoMedico) {
                     throw new RuntimeException("Error al crear médico");
                 }
+                System.out.println("Médico creado correctamente");
             }
 
             default -> {
-                // ADMINISTRADOR y AGENDADOR no hacen nada aquí
+                System.out.println("Rol " + rol + " no requiere registro adicional");
             }
         }
+        
+        System.out.println("=== REGISTRO COMPLETADO CON ÉXITO ===");
         return true;
     }
     
@@ -162,4 +180,13 @@ public class UsuarioService {
         }
         return medicos;
     }
+    
+    // Método para verificar si un usuario existe por username (sin autenticar)
+    public Usuario obtenerUsuarioPorUsername(String username) {
+        if (username == null || username.trim().isEmpty()) {
+            return null;
+        }
+        return usuarioRepository.findByUsername(username);
+    }
+    
 }
