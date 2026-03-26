@@ -89,7 +89,7 @@ public class AppointmentService {
         // 1. Validación solapamiento paciente
         if (appointmentRepository.existsByPacienteAndFecha(paciente.getId(), fechaHora)) {
             throw new IllegalArgumentException(
-                    "El paciente ya tiene agendada una cita en este horario con otro médico");
+                    "El paciente ya tiene agendada una cita en este horario");
         }
 
         // 2. Validación simultaneidad (MÉDICO OCUPADO)
