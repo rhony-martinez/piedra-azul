@@ -1,7 +1,8 @@
 package com.mycompany.piedrazul.ui.panel;
 
 import com.mycompany.piedrazul.domain.model.Usuario;
-import com.mycompany.piedrazul.ui.appointments.ManualAppointmentDialog;
+import com.mycompany.piedrazul.ui.appointments.AgendarCitaDialog;
+import com.mycompany.piedrazul.ui.appointments.HistorialCitasFrame;
 import javax.swing.*;
 import java.awt.*;
 
@@ -50,10 +51,11 @@ public class AgendadorPanel extends JPanel {
         JButton btnAgendar = crearBoton("AGENDAR CITA");
         JButton btnHistorial = crearBoton("HISTORIAL DE CITAS");
         
+        // Acción para AGENDAR CITA - Usa el nuevo diálogo
         btnAgendar.addActionListener(e -> {
             if (parentFrame != null) {
                 parentFrame.setVisible(false);
-                new ManualAppointmentDialog(usuarioActual, parentFrame).setVisible(true);
+                new AgendarCitaDialog(usuarioActual, parentFrame).setVisible(true);
             } else {
                 JOptionPane.showMessageDialog(this, 
                     "Error: No se pudo obtener la ventana principal", 
@@ -62,11 +64,17 @@ public class AgendadorPanel extends JPanel {
             }
         });
         
+        // Acción para HISTORIAL DE CITAS
         btnHistorial.addActionListener(e -> {
-            JOptionPane.showMessageDialog(this, 
-                "Funcionalidad en desarrollo - Ver historial de citas", 
-                "Información", 
-                JOptionPane.INFORMATION_MESSAGE);
+            if (parentFrame != null) {
+                parentFrame.setVisible(false);
+                new HistorialCitasFrame(usuarioActual, parentFrame).setVisible(true);
+            } else {
+                JOptionPane.showMessageDialog(this, 
+                    "Error: No se pudo obtener la ventana principal", 
+                    "Error", 
+                    JOptionPane.ERROR_MESSAGE);
+            }
         });
         
         buttonsPanel.add(btnAgendar);

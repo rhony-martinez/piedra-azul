@@ -7,6 +7,10 @@ import com.mycompany.piedrazul.domain.model.Medico;
 import com.mycompany.piedrazul.domain.model.Paciente;
 import com.mycompany.piedrazul.domain.model.Usuario;
 import com.mycompany.piedrazul.domain.repository.IAppointmentRepository;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -49,8 +53,12 @@ public class AppointmentService {
     }
 
     public List<Appointment> obtenerHistorial(Usuario usuario) {
-        return appointmentRepository.findHistory(usuario);
-    }
+    return appointmentRepository.findHistory(usuario);
+}
+
+public List<Appointment> obtenerTodasLasCitas() {
+    return appointmentRepository.findAll();
+}
 
     /*public boolean confirmarCita(int id) {
         Appointment cita = appointmentRepository.findById(id);
@@ -92,5 +100,36 @@ public class AppointmentService {
                 observacion);
 
         return appointmentRepository.save(cita);
+    }
+    
+    // Obtener citas por médico y fecha
+    public List<Appointment> obtenerCitasPorMedicoYFecha(int medicoId, LocalDate fecha) {
+        List<Appointment> todas = appointmentRepository.findAll();
+        List<Appointment> filtradas = new ArrayList<>();
+
+        LocalDateTime inicioDia = fecha.atStartOfDay();
+        LocalDateTime finDia = fecha.atTime(23, 59, 59);
+
+        for (Appointment cita : todas) {
+            if (cita.getFechaHora() == null) continue;
+
+            boolean coincideMedico = (medicoId == 0) || 
+                                     (cita.getMedico() != null && cita.getMedico().getId() == medicoId);
+            boolean coincideFecha = !cita.getFechaHora().isBefore(inicioDia) && 
+                                    !cita.getFechaHora().isAfter(finDia);
+
+            if (coincideMedico && coincideFecha) {
+                filtradas.add(cita);
+            }
+        }
+
+        return filtradas;
+    }
+
+    public boolean verificarDisponibilidadMedico(int medicoId, LocalDateTime fechaHora) {
+        // Redondear a minutos para evitar problemas con segundos
+        LocalDateTime fechaHoraSinSegundos = fechaHora.withSecond(0).withNano(0);
+        boolean existe = appointmentRepository.existsByMedicoAndFechaHora(medicoId, fechaHoraSinSegundos);
+        return !existe; // Retorna true si NO existe (está disponible)
     }
 }
