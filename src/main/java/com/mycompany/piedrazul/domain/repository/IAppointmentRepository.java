@@ -18,4 +18,6 @@ public interface IAppointmentRepository {
     boolean delete(int id);
     boolean existsByPacienteAndFecha(int pacienteId, LocalDateTime fechaHora);
     boolean existsByMedicoAndFecha(int medicoId, LocalDateTime fechaHora);
+    List<Appointment> listarPorMedicoYFecha(String medico, String fecha);
+    public List<Appointment> listar(String medico, String fecha);
 }

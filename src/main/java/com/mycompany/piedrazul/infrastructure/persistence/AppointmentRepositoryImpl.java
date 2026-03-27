@@ -318,4 +318,68 @@ public class AppointmentRepositoryImpl implements IAppointmentRepository {
 
         return false;
     }
+
+    @Override
+    public List<Appointment> listarPorMedicoYFecha(String nombreMedico, String fecha) {
+
+        List<Appointment> lista = new ArrayList<>();
+
+        String sql = """
+                    SELECT c.*
+                    FROM Cita c
+                    INNER JOIN Persona m ON m.per_id = c.medico_id
+                    WHERE m.per_primer_nombre ILIKE ?
+                    AND c.fecha_hora_cita::DATE = ?
+                """;
+
+        try (Connection conn = ConnectionFactory.getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setString(1, "%" + nombreMedico + "%");
+            ps.setDate(2, java.sql.Date.valueOf(fecha));
+
+            ResultSet rs = ps.executeQuery();
+
+            while (rs.next()) {
+                lista.add(map(rs)); // reutilizas TU método correcto
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return lista;
+    }
+
+    @Override
+    public List<Appointment> listar(String medico, String fecha) {
+
+        List<Appointment> lista = new ArrayList<>();
+
+        String sql = """
+                    SELECT c.*
+                    FROM Cita c
+                    INNER JOIN Persona m ON m.per_id = c.medico_id
+                    WHERE m.per_primer_nombre ILIKE ?
+                    AND c.fecha_hora_cita::DATE = ?
+                """;
+
+        try (Connection conn = ConnectionFactory.getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setString(1, "%" + medico + "%");
+            ps.setDate(2, java.sql.Date.valueOf(fecha));
+
+            ResultSet rs = ps.executeQuery();
+
+            while (rs.next()) {
+                lista.add(map(rs)); // 🔥 reutilizas TU método bueno
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return lista;
+    }
 }

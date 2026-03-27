@@ -16,6 +16,7 @@ public class MenuPrincipalFrame extends JFrame {
     private Usuario usuario;
     private UsuarioService usuarioService;
     private JButton btnCerrar;
+    private JPanel panelContenido;
 
     public MenuPrincipalFrame(Usuario usuario, UsuarioService usuarioService) {
         this.usuario = usuario;
@@ -34,9 +35,9 @@ public class MenuPrincipalFrame extends JFrame {
 
         // Header
         JLabel lblHeader = new JLabel(
-            "Bienvenido: " + usuario.getUsername()
-            + " - " + usuario.getRol(),
-            SwingConstants.CENTER
+                "Bienvenido: " + usuario.getUsername()
+                + " - " + usuario.getRol(),
+                SwingConstants.CENTER
         );
 
         lblHeader.setBorder(BorderFactory.createEmptyBorder(15, 10, 15, 10));
@@ -44,7 +45,10 @@ public class MenuPrincipalFrame extends JFrame {
         mainPanel.add(lblHeader, BorderLayout.NORTH);
 
         // Panel dinámico por rol (ahora pasamos el usuario)
-        mainPanel.add(obtenerPanelPorRol(), BorderLayout.CENTER);
+        panelContenido = new JPanel(new BorderLayout());
+        panelContenido.add(obtenerPanelPorRol(), BorderLayout.CENTER);
+
+        mainPanel.add(panelContenido, BorderLayout.CENTER);
 
         // Botón cerrar sesión
         btnCerrar = new JButton("Cerrar sesión");
@@ -64,10 +68,21 @@ public class MenuPrincipalFrame extends JFrame {
 
     private JPanel obtenerPanelPorRol() {
         return switch (usuario.getRol()) {
-            case ADMINISTRADOR -> new AdminPanel();
-            case MEDICO_TERAPISTA -> new MedicoPanel(usuario);
-            case PACIENTE -> new PacientePanel(usuario);
-            case AGENDADOR -> new AgendadorPanel(usuario);
+            case ADMINISTRADOR ->
+                new AdminPanel();
+            case MEDICO_TERAPISTA ->
+                new MedicoPanel(usuario);
+            case PACIENTE ->
+                new PacientePanel(usuario);
+            case AGENDADOR ->
+                new AgendadorPanel(usuario, this);
         };
+    }
+
+    public void mostrarPanel(JPanel panel) {
+        panelContenido.removeAll();
+        panelContenido.add(panel, BorderLayout.CENTER);
+        panelContenido.revalidate();
+        panelContenido.repaint();
     }
 }

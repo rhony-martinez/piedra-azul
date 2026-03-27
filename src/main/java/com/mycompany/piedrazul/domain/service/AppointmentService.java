@@ -123,4 +123,12 @@ public class AppointmentService {
     private LocalDateTime normalizarHora(LocalDateTime fecha) {
         return fecha.withMinute(0).withSecond(0).withNano(0);
     }
+
+    public List<Appointment> listar(String medico, String fecha) {
+        return appointmentRepository.listar(medico, fecha);
+    }
+
+    public List<Appointment> listarPorMedicoYFecha(String medico, String fecha) {
+        return appointmentRepository.listarPorMedicoYFecha(medico, fecha);
+    }
 }

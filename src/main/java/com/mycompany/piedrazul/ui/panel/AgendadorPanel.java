@@ -2,17 +2,20 @@ package com.mycompany.piedrazul.ui.panel;
 
 import com.mycompany.piedrazul.domain.model.Usuario;
 import com.mycompany.piedrazul.ui.appointments.ManualAppointmentDialog;
-// import com.mycompany.piedrazul.ui.appointments.AppointmentListPanel;
-// import com.mycompany.piedrazul.ui.appointments.ManualAppointmentDialog;
+import com.mycompany.piedrazul.ui.MenuPrincipalFrame;
+import com.mycompany.piedrazul.ui.appointments.AppointmentListPanel;
+//import com.mycompany.piedrazul.ui.appointments.ManualAppointmentDialog;
 import javax.swing.*;
 import java.awt.*;
 
 public class AgendadorPanel extends JPanel {
-    
-    private Usuario usuarioActual;
 
-    public AgendadorPanel(Usuario usuarioActual) {
-        this.usuarioActual = usuarioActual;
+    private Usuario usuarioActual;
+    private MenuPrincipalFrame frame;
+
+    public AgendadorPanel(Usuario usuario, MenuPrincipalFrame frame) {
+        this.usuarioActual = usuario;
+        this.frame = frame;
         initComponents();
     }
 
@@ -38,15 +41,24 @@ public class AgendadorPanel extends JPanel {
             dialog.setVisible(true);
         });
 
-        // btnCitasAgendadas.addActionListener(e -> {
-        //     AppointmentListPanel listPanel = new AppointmentListPanel(usuarioActual, false);
-        //     JOptionPane.showMessageDialog(this, listPanel, "Citas Agendadas", JOptionPane.PLAIN_MESSAGE);
-        // });
+        // Abrir ventana para agendar
+        btnAgendar.addActionListener(e -> {
+            ManualAppointmentDialog dialog = new ManualAppointmentDialog(
+                    (JFrame) SwingUtilities.getWindowAncestor(this),
+                    usuarioActual
+            );
+            dialog.setVisible(true);
+        });
 
-        // btnHistorial.addActionListener(e -> {
-        //     AppointmentListPanel listPanel = new AppointmentListPanel(usuarioActual, true);
-        //     JOptionPane.showMessageDialog(this, listPanel, "Historial de Citas", JOptionPane.PLAIN_MESSAGE);
-        // });
+        // Mostrar citas próximas
+        btnCitasAgendadas.addActionListener(e -> {
+            frame.mostrarPanel(new AppointmentListPanel(usuarioActual, false));
+        });
+
+        // Mostrar historial
+        btnHistorial.addActionListener(e -> {
+            frame.mostrarPanel(new AppointmentListPanel(usuarioActual, true));
+        });
 
         gridPanel.add(btnAgendar);
         gridPanel.add(btnCitasAgendadas);

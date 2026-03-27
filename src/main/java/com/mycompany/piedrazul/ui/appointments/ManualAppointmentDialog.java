@@ -1,12 +1,9 @@
 package com.mycompany.piedrazul.ui.appointments;
 
-import com.mycompany.piedrazul.domain.builder.AppointmentDirector;
-import com.mycompany.piedrazul.domain.builder.ManualAppointmentBuilder;
 import com.mycompany.piedrazul.domain.model.Appointment;
 import com.mycompany.piedrazul.domain.model.Medico;
 import com.mycompany.piedrazul.domain.model.Paciente;
 import com.mycompany.piedrazul.domain.model.Persona;
-import com.mycompany.piedrazul.domain.model.Rol;
 import com.mycompany.piedrazul.domain.model.Usuario;
 import com.mycompany.piedrazul.domain.repository.IAppointmentRepository;
 import com.mycompany.piedrazul.domain.repository.IMedicoRepository;
