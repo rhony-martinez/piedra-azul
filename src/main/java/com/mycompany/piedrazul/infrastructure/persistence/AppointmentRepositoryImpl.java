@@ -29,46 +29,54 @@ public class AppointmentRepositoryImpl implements IAppointmentRepository {
     }
 
     @Override
-    public Appointment save(Appointment appointment) {
+public Appointment save(Appointment appointment) {
+    System.out.println("=== GUARDANDO CITA EN BD ===");
+    System.out.println("CreadoPor ID: " + (appointment.getCreadoPor() != null ? appointment.getCreadoPor().getId() : "null"));
+    System.out.println("Paciente ID: " + (appointment.getPaciente() != null ? appointment.getPaciente().getId() : "null"));
+    System.out.println("Médico ID: " + (appointment.getMedico() != null ? appointment.getMedico().getId() : "null"));
+    System.out.println("Fecha/Hora: " + appointment.getFechaHora());
+    System.out.println("Estado: " + (appointment.getEstado() != null ? appointment.getEstado().name() : "null"));
+    System.out.println("Observación: " + appointment.getObservacion());
 
-        String sql = """
-                INSERT INTO Cita (usu_id, paciente_id, medico_id, fecha_hora_cita, cita_estado, observacion)
-                VALUES (?, ?, ?, ?, ?, ?)
-                """;
+    String sql = """
+            INSERT INTO Cita (usu_id, paciente_id, medico_id, fecha_hora_cita, cita_estado, observacion)
+            VALUES (?, ?, ?, ?, ?, ?)
+            """;
 
-        try (Connection conn = ConnectionFactory.getConnection();
-                PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+    try (Connection conn = ConnectionFactory.getConnection();
+            PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
-            stmt.setInt(1, appointment.getCreadoPor().getId());
-            stmt.setInt(2, appointment.getPaciente().getId());
-            stmt.setInt(3, appointment.getMedico().getId());
-            stmt.setTimestamp(4, Timestamp.valueOf(appointment.getFechaHora()));
-            stmt.setString(5, appointment.getEstado().name());
-            stmt.setString(6, appointment.getObservacion());
+        stmt.setInt(1, appointment.getCreadoPor().getId());
+        stmt.setInt(2, appointment.getPaciente().getId());
+        stmt.setInt(3, appointment.getMedico().getId());
+        stmt.setTimestamp(4, Timestamp.valueOf(appointment.getFechaHora()));
+        stmt.setString(5, appointment.getEstado().name());
+        stmt.setString(6, appointment.getObservacion());
 
-            stmt.executeUpdate();
+        int affected = stmt.executeUpdate();
+        System.out.println("Filas afectadas: " + affected);
 
-            ResultSet rs = stmt.getGeneratedKeys();
-            if (rs.next()) {
-                appointment.setId(rs.getInt(1));
-            }
-
-            return appointment;
-
-        } catch (SQLException e) {
-
-            // CLAVE: manejo de simultaneidad
-            if (e.getSQLState().equals("23505")) { // unique violation
-                throw new RuntimeException("Horario no disponible");
-            }
-
-            throw new RuntimeException("Error al guardar cita", e);
+        ResultSet rs = stmt.getGeneratedKeys();
+        if (rs.next()) {
+            appointment.setId(rs.getInt(1));
+            System.out.println("ID generado: " + appointment.getId());
+        } else {
+            System.out.println("ERROR: No se generó ID");
         }
+
+        return appointment;
+
+    } catch (SQLException e) {
+        System.err.println("Error SQL: " + e.getMessage());
+        System.err.println("SQL State: " + e.getSQLState());
+        e.printStackTrace();
+        throw new RuntimeException("Error al guardar cita", e);
     }
+}
 
     @Override
     public Appointment findById(int id) {
-        String sql = "SELECT * FROM citas WHERE id = ?";
+        String sql = "SELECT * FROM Cita WHERE id = ?";
 
         try (Connection conn = ConnectionFactory.getConnection();
                 PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -97,7 +105,7 @@ public class AppointmentRepositoryImpl implements IAppointmentRepository {
 
     private List<Appointment> findByUserField(String fieldName, int userId) {
         List<Appointment> appointments = new ArrayList<>();
-        String sql = "SELECT * FROM citas WHERE " + fieldName + " = ? ORDER BY date_time DESC";
+        String sql = "SELECT * FROM Cita WHERE " + fieldName + " = ? ORDER BY date_time DESC";
 
         try (Connection conn = ConnectionFactory.getConnection();
                 PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -115,27 +123,28 @@ public class AppointmentRepositoryImpl implements IAppointmentRepository {
     }
 
     @Override
-    public List<Appointment> findAll() {
-        List<Appointment> appointments = new ArrayList<>();
-        String sql = "SELECT * FROM citas ORDER BY date_time DESC";
+public List<Appointment> findAll() {
+    List<Appointment> appointments = new ArrayList<>();
+    // Cambia "citas" por "Cita" o el nombre correcto de tu tabla
+    String sql = "SELECT * FROM Cita ORDER BY fecha_hora_cita DESC";
 
-        try (Connection conn = ConnectionFactory.getConnection();
-                Statement stmt = conn.createStatement();
-                ResultSet rs = stmt.executeQuery(sql)) {
+    try (Connection conn = ConnectionFactory.getConnection();
+            Statement stmt = conn.createStatement();
+            ResultSet rs = stmt.executeQuery(sql)) {
 
-            while (rs.next()) {
-                appointments.add(map(rs));
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
+        while (rs.next()) {
+            appointments.add(map(rs));
         }
-        return appointments;
+    } catch (SQLException e) {
+        e.printStackTrace();
     }
+    return appointments;
+}
 
     @Override
     public List<Appointment> findUpcoming(Usuario user) {
         List<Appointment> appointments = new ArrayList<>();
-        String sql = "SELECT * FROM citas WHERE (patient_id = ? OR professional_id = ? OR created_by_id = ?) "
+        String sql = "SELECT * FROM Cita WHERE (patient_id = ? OR professional_id = ? OR created_by_id = ?) "
                 + "AND date_time >= ? AND status != 'CANCELLED' AND status != 'COMPLETED' "
                 + "ORDER BY date_time ASC";
 
@@ -162,7 +171,7 @@ public class AppointmentRepositoryImpl implements IAppointmentRepository {
     @Override
     public List<Appointment> findHistory(Usuario user) {
         List<Appointment> appointments = new ArrayList<>();
-        String sql = "SELECT * FROM citas WHERE (patient_id = ? OR professional_id = ? OR created_by_id = ?) "
+        String sql = "SELECT * FROM Cita WHERE (patient_id = ? OR professional_id = ? OR created_by_id = ?) "
                 + "AND (date_time < ? OR status = 'COMPLETED' OR status = 'CANCELLED') "
                 + "ORDER BY date_time DESC";
 
@@ -188,7 +197,7 @@ public class AppointmentRepositoryImpl implements IAppointmentRepository {
 
     @Override
     public boolean update(Appointment appointment) {
-        String sql = "UPDATE citas SET date_time = ?, status = ?, notes = ? WHERE id = ?";
+        String sql = "UPDATE Cita SET date_time = ?, status = ?, notes = ? WHERE id = ?";
         try (Connection conn = ConnectionFactory.getConnection();
                 PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, appointment.getFechaHora().format(formatter));
@@ -206,7 +215,7 @@ public class AppointmentRepositoryImpl implements IAppointmentRepository {
 
     @Override
     public boolean cancel(int id) {
-        String sql = "UPDATE citas SET status = 'CANCELLED' WHERE id = ?";
+        String sql = "UPDATE Cita SET status = 'CANCELLED' WHERE id = ?";
 
         try (Connection conn = ConnectionFactory.getConnection();
                 PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -222,7 +231,7 @@ public class AppointmentRepositoryImpl implements IAppointmentRepository {
 
     @Override
     public boolean delete(int id) {
-        String sql = "DELETE FROM citas WHERE id = ?";
+        String sql = "DELETE FROM Cita WHERE id = ?";
 
         try (Connection conn = ConnectionFactory.getConnection();
                 PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -260,7 +269,7 @@ public class AppointmentRepositoryImpl implements IAppointmentRepository {
     @Override
     public List<Appointment> findByCreatedBy(Usuario createdBy) {
         List<Appointment> appointments = new ArrayList<>();
-        String sql = "SELECT * FROM citas WHERE created_by_id = ? ORDER BY date_time DESC";
+        String sql = "SELECT * FROM Cita WHERE created_by_id = ? ORDER BY date_time DESC";
         try (Connection conn = ConnectionFactory.getConnection();
                 PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, createdBy.getId());
@@ -295,27 +304,31 @@ public class AppointmentRepositoryImpl implements IAppointmentRepository {
             throw new RuntimeException("Error validando cita", e);
         }
     }
-
+    
     @Override
-    public boolean existsByMedicoAndFecha(int medicoId, LocalDateTime fechaHora) {
-        String sql = "SELECT COUNT(*) FROM Cita WHERE medico_id = ? AND fecha_hora_cita = ?";
+    public boolean existsByMedicoAndFechaHora(int medicoId, LocalDateTime fechaHora) {
+        // Redondear la fecha/hora a minutos (ignorar segundos)
+        LocalDateTime fechaHoraSinSegundos = fechaHora.withSecond(0).withNano(0);
+
+        String sql = "SELECT COUNT(*) FROM Cita WHERE medico_id = ? AND DATE_TRUNC('minute', fecha_hora_cita) = ?";
 
         try (Connection conn = ConnectionFactory.getConnection();
-                PreparedStatement stmt = conn.prepareStatement(sql)) {
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setInt(1, medicoId);
-            stmt.setTimestamp(2, Timestamp.valueOf(fechaHora));
+            stmt.setTimestamp(2, Timestamp.valueOf(fechaHoraSinSegundos));
 
             ResultSet rs = stmt.executeQuery();
-
             if (rs.next()) {
-                return rs.getInt(1) > 0;
+                int count = rs.getInt(1);
+                System.out.println("Citas encontradas para médico " + medicoId + " a las " + fechaHoraSinSegundos + ": " + count);
+                return count > 0;
             }
 
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            e.printStackTrace();
         }
-
         return false;
     }
+    
 }

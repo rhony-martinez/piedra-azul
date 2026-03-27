@@ -1,67 +1,122 @@
 package com.mycompany.piedrazul.ui.panel;
 
 import com.mycompany.piedrazul.domain.model.Usuario;
-import com.mycompany.piedrazul.ui.appointments.ManualAppointmentDialog;
-// import com.mycompany.piedrazul.ui.appointments.AppointmentListPanel;
-// import com.mycompany.piedrazul.ui.appointments.ManualAppointmentDialog;
+import com.mycompany.piedrazul.ui.appointments.AgendarCitaDialog;
+import com.mycompany.piedrazul.ui.appointments.HistorialCitasFrame;
 import javax.swing.*;
 import java.awt.*;
 
 public class AgendadorPanel extends JPanel {
     
     private Usuario usuarioActual;
+    private JFrame parentFrame;
 
     public AgendadorPanel(Usuario usuarioActual) {
         this.usuarioActual = usuarioActual;
         initComponents();
     }
+    
+    public void setParentFrame(JFrame parent) {
+        this.parentFrame = parent;
+    }
 
     private void initComponents() {
-
         setLayout(new BorderLayout());
         setBackground(Color.WHITE);
-
-        JPanel gridPanel = new JPanel(new GridLayout(2, 2, 20, 20));
-        gridPanel.setBorder(BorderFactory.createEmptyBorder(40, 60, 40, 60));
-        gridPanel.setBackground(Color.WHITE);
-
+        
+        // ===================== BARRA SUPERIOR =====================
+        JPanel topBar = new JPanel(new BorderLayout());
+        topBar.setBackground(Color.WHITE);
+        topBar.setBorder(BorderFactory.createEmptyBorder(20, 40, 20, 40));
+        
+        JLabel lblBienvenido = new JLabel("Bienvenido: " + usuarioActual.getUsername());
+        lblBienvenido.setFont(new Font("Segoe UI", Font.BOLD, 18));
+        lblBienvenido.setForeground(new Color(70, 170, 200));
+        
+        JLabel lblRol = new JLabel(usuarioActual.getRol().toString());
+        lblRol.setFont(new Font("Segoe UI", Font.BOLD, 18));
+        lblRol.setForeground(new Color(70, 170, 200));
+        
+        topBar.add(lblBienvenido, BorderLayout.WEST);
+        topBar.add(lblRol, BorderLayout.EAST);
+        
+        // ===================== BOTONES DE ACCIÓN =====================
+        JPanel centerPanel = new JPanel(new GridBagLayout());
+        centerPanel.setBackground(Color.WHITE);
+        
+        JPanel buttonsPanel = new JPanel(new GridLayout(1, 2, 40, 0));
+        buttonsPanel.setBackground(Color.WHITE);
+        buttonsPanel.setBorder(BorderFactory.createEmptyBorder(40, 150, 40, 150));
+        
         JButton btnAgendar = crearBoton("AGENDAR CITA");
-        JButton btnCitasAgendadas = crearBoton("CITAS AGENDADAS");
         JButton btnHistorial = crearBoton("HISTORIAL DE CITAS");
-
-        //Acciones
+        
+        // Acción para AGENDAR CITA - Usa el nuevo diálogo
         btnAgendar.addActionListener(e -> {
-            ManualAppointmentDialog dialog = new ManualAppointmentDialog(
-                (JFrame) SwingUtilities.getWindowAncestor(this), 
-                usuarioActual
-            );
-            dialog.setVisible(true);
+            if (parentFrame != null) {
+                parentFrame.setVisible(false);
+                new AgendarCitaDialog(usuarioActual, parentFrame).setVisible(true);
+            } else {
+                JOptionPane.showMessageDialog(this, 
+                    "Error: No se pudo obtener la ventana principal", 
+                    "Error", 
+                    JOptionPane.ERROR_MESSAGE);
+            }
         });
-
-        // btnCitasAgendadas.addActionListener(e -> {
-        //     AppointmentListPanel listPanel = new AppointmentListPanel(usuarioActual, false);
-        //     JOptionPane.showMessageDialog(this, listPanel, "Citas Agendadas", JOptionPane.PLAIN_MESSAGE);
-        // });
-
-        // btnHistorial.addActionListener(e -> {
-        //     AppointmentListPanel listPanel = new AppointmentListPanel(usuarioActual, true);
-        //     JOptionPane.showMessageDialog(this, listPanel, "Historial de Citas", JOptionPane.PLAIN_MESSAGE);
-        // });
-
-        gridPanel.add(btnAgendar);
-        gridPanel.add(btnCitasAgendadas);
-        gridPanel.add(btnHistorial);
-
-        add(gridPanel, BorderLayout.CENTER);
+        
+        // Acción para HISTORIAL DE CITAS
+        btnHistorial.addActionListener(e -> {
+            if (parentFrame != null) {
+                parentFrame.setVisible(false);
+                new HistorialCitasFrame(usuarioActual, parentFrame).setVisible(true);
+            } else {
+                JOptionPane.showMessageDialog(this, 
+                    "Error: No se pudo obtener la ventana principal", 
+                    "Error", 
+                    JOptionPane.ERROR_MESSAGE);
+            }
+        });
+        
+        buttonsPanel.add(btnAgendar);
+        buttonsPanel.add(btnHistorial);
+        
+        centerPanel.add(buttonsPanel);
+        
+        // ===================== TEXTO INFERIOR DERECHA =====================
+        JPanel bottomPanel = new JPanel(new BorderLayout());
+        bottomPanel.setBackground(Color.WHITE);
+        bottomPanel.setBorder(BorderFactory.createEmptyBorder(0, 0, 20, 40));
+        
+        JLabel lblMenuPrincipal = new JLabel("Menú principal");
+        lblMenuPrincipal.setFont(new Font("Segoe UI", Font.ITALIC, 14));
+        lblMenuPrincipal.setForeground(new Color(70, 170, 200));
+        
+        bottomPanel.add(lblMenuPrincipal, BorderLayout.EAST);
+        
+        add(topBar, BorderLayout.NORTH);
+        add(centerPanel, BorderLayout.CENTER);
+        add(bottomPanel, BorderLayout.SOUTH);
     }
 
     private JButton crearBoton(String texto) {
         JButton boton = new JButton(texto);
         boton.setFocusPainted(false);
-        boton.setBackground(new Color(33, 150, 243));
+        boton.setBackground(new Color(70, 170, 200));
         boton.setForeground(Color.WHITE);
-        boton.setFont(new Font("Segoe UI", Font.BOLD, 14));
-        boton.setPreferredSize(new Dimension(200, 60));
+        boton.setFont(new Font("Segoe UI", Font.BOLD, 18));
+        boton.setPreferredSize(new Dimension(280, 100));
+        boton.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        boton.setOpaque(true);
+        boton.setBorderPainted(false);
+        
+        boton.addChangeListener(e -> {
+            if (boton.getModel().isRollover()) {
+                boton.setBackground(new Color(50, 140, 170));
+            } else {
+                boton.setBackground(new Color(70, 170, 200));
+            }
+        });
+        
         return boton;
     }
 }
