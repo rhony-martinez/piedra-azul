@@ -1,4 +1,4 @@
-/*package com.mycompany.piedrazul.domain.model;
+package com.mycompany.piedrazul.domain.model;
 
 import java.time.LocalDateTime;
 
@@ -66,4 +66,4 @@ public class Appointment {
                 ", reason='" + reason + '\'' +
                 '}';
     }
-}*/
+}
