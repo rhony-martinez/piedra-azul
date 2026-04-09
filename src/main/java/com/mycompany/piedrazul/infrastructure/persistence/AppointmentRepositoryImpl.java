@@ -29,50 +29,53 @@ public class AppointmentRepositoryImpl implements IAppointmentRepository {
     }
 
     @Override
-public Appointment save(Appointment appointment) {
-    System.out.println("=== GUARDANDO CITA EN BD ===");
-    System.out.println("CreadoPor ID: " + (appointment.getCreadoPor() != null ? appointment.getCreadoPor().getId() : "null"));
-    System.out.println("Paciente ID: " + (appointment.getPaciente() != null ? appointment.getPaciente().getId() : "null"));
-    System.out.println("Médico ID: " + (appointment.getMedico() != null ? appointment.getMedico().getId() : "null"));
-    System.out.println("Fecha/Hora: " + appointment.getFechaHora());
-    System.out.println("Estado: " + (appointment.getEstado() != null ? appointment.getEstado().name() : "null"));
-    System.out.println("Observación: " + appointment.getObservacion());
+    public Appointment save(Appointment appointment) {
+        System.out.println("=== GUARDANDO CITA EN BD ===");
+        System.out.println(
+                "CreadoPor ID: " + (appointment.getCreadoPor() != null ? appointment.getCreadoPor().getId() : "null"));
+        System.out.println(
+                "Paciente ID: " + (appointment.getPaciente() != null ? appointment.getPaciente().getId() : "null"));
+        System.out
+                .println("Médico ID: " + (appointment.getMedico() != null ? appointment.getMedico().getId() : "null"));
+        System.out.println("Fecha/Hora: " + appointment.getFechaHora());
+        System.out.println("Estado: " + (appointment.getEstado() != null ? appointment.getEstado().name() : "null"));
+        System.out.println("Observación: " + appointment.getObservacion());
 
-    String sql = """
-            INSERT INTO Cita (usu_id, paciente_id, medico_id, fecha_hora_cita, cita_estado, observacion)
-            VALUES (?, ?, ?, ?, ?, ?)
-            """;
+        String sql = """
+                INSERT INTO Cita (usu_id, paciente_id, medico_id, fecha_hora_cita, cita_estado, observacion)
+                VALUES (?, ?, ?, ?, ?, ?)
+                """;
 
-    try (Connection conn = ConnectionFactory.getConnection();
-            PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+        try (Connection conn = ConnectionFactory.getConnection();
+                PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
-        stmt.setInt(1, appointment.getCreadoPor().getId());
-        stmt.setInt(2, appointment.getPaciente().getId());
-        stmt.setInt(3, appointment.getMedico().getId());
-        stmt.setTimestamp(4, Timestamp.valueOf(appointment.getFechaHora()));
-        stmt.setString(5, appointment.getEstado().name());
-        stmt.setString(6, appointment.getObservacion());
+            stmt.setInt(1, appointment.getCreadoPor().getId());
+            stmt.setInt(2, appointment.getPaciente().getId());
+            stmt.setInt(3, appointment.getMedico().getId());
+            stmt.setTimestamp(4, Timestamp.valueOf(appointment.getFechaHora()));
+            stmt.setString(5, appointment.getEstado().name());
+            stmt.setString(6, appointment.getObservacion());
 
-        int affected = stmt.executeUpdate();
-        System.out.println("Filas afectadas: " + affected);
+            int affected = stmt.executeUpdate();
+            System.out.println("Filas afectadas: " + affected);
 
-        ResultSet rs = stmt.getGeneratedKeys();
-        if (rs.next()) {
-            appointment.setId(rs.getInt(1));
-            System.out.println("ID generado: " + appointment.getId());
-        } else {
-            System.out.println("ERROR: No se generó ID");
+            ResultSet rs = stmt.getGeneratedKeys();
+            if (rs.next()) {
+                appointment.setId(rs.getInt(1));
+                System.out.println("ID generado: " + appointment.getId());
+            } else {
+                System.out.println("ERROR: No se generó ID");
+            }
+
+            return appointment;
+
+        } catch (SQLException e) {
+            System.err.println("Error SQL: " + e.getMessage());
+            System.err.println("SQL State: " + e.getSQLState());
+            e.printStackTrace();
+            throw new RuntimeException("Error al guardar cita", e);
         }
-
-        return appointment;
-
-    } catch (SQLException e) {
-        System.err.println("Error SQL: " + e.getMessage());
-        System.err.println("SQL State: " + e.getSQLState());
-        e.printStackTrace();
-        throw new RuntimeException("Error al guardar cita", e);
     }
-}
 
     @Override
     public Appointment findById(int id) {
@@ -123,23 +126,23 @@ public Appointment save(Appointment appointment) {
     }
 
     @Override
-public List<Appointment> findAll() {
-    List<Appointment> appointments = new ArrayList<>();
-    // Cambia "citas" por "Cita" o el nombre correcto de tu tabla
-    String sql = "SELECT * FROM Cita ORDER BY fecha_hora_cita DESC";
+    public List<Appointment> findAll() {
+        List<Appointment> appointments = new ArrayList<>();
+        // Cambia "citas" por "Cita" o el nombre correcto de tu tabla
+        String sql = "SELECT * FROM Cita ORDER BY fecha_hora_cita DESC";
 
-    try (Connection conn = ConnectionFactory.getConnection();
-            Statement stmt = conn.createStatement();
-            ResultSet rs = stmt.executeQuery(sql)) {
+        try (Connection conn = ConnectionFactory.getConnection();
+                Statement stmt = conn.createStatement();
+                ResultSet rs = stmt.executeQuery(sql)) {
 
-        while (rs.next()) {
-            appointments.add(map(rs));
+            while (rs.next()) {
+                appointments.add(map(rs));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
-    } catch (SQLException e) {
-        e.printStackTrace();
+        return appointments;
     }
-    return appointments;
-}
 
     @Override
     public List<Appointment> findUpcoming(Usuario user) {
@@ -288,14 +291,20 @@ public List<Appointment> findAll() {
 
         String sql = """
                 SELECT 1 FROM Cita
-                WHERE paciente_id = ? AND fecha_hora_cita = ?
+                WHERE paciente_id = ?
+                AND fecha_hora_cita >= ?
+                AND fecha_hora_cita < ?
                 """;
+
+        LocalDateTime inicio = fechaHora.withSecond(0).withNano(0);
+        LocalDateTime fin = inicio.plusMinutes(1);
 
         try (Connection conn = ConnectionFactory.getConnection();
                 PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setInt(1, pacienteId);
-            stmt.setTimestamp(2, Timestamp.valueOf(fechaHora));
+            stmt.setTimestamp(2, Timestamp.valueOf(inicio));
+            stmt.setTimestamp(3, Timestamp.valueOf(fin));
 
             ResultSet rs = stmt.executeQuery();
             return rs.next();
@@ -304,7 +313,7 @@ public List<Appointment> findAll() {
             throw new RuntimeException("Error validando cita", e);
         }
     }
-    
+
     @Override
     public boolean existsByMedicoAndFechaHora(int medicoId, LocalDateTime fechaHora) {
         // Redondear la fecha/hora a minutos (ignorar segundos)
@@ -313,7 +322,7 @@ public List<Appointment> findAll() {
         String sql = "SELECT COUNT(*) FROM Cita WHERE medico_id = ? AND DATE_TRUNC('minute', fecha_hora_cita) = ?";
 
         try (Connection conn = ConnectionFactory.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+                PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setInt(1, medicoId);
             stmt.setTimestamp(2, Timestamp.valueOf(fechaHoraSinSegundos));
@@ -321,7 +330,8 @@ public List<Appointment> findAll() {
             ResultSet rs = stmt.executeQuery();
             if (rs.next()) {
                 int count = rs.getInt(1);
-                System.out.println("Citas encontradas para médico " + medicoId + " a las " + fechaHoraSinSegundos + ": " + count);
+                System.out.println(
+                        "Citas encontradas para médico " + medicoId + " a las " + fechaHoraSinSegundos + ": " + count);
                 return count > 0;
             }
 
@@ -330,5 +340,5 @@ public List<Appointment> findAll() {
         }
         return false;
     }
-    
+
 }

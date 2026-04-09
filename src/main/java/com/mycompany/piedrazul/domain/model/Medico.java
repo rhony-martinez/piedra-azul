@@ -10,6 +10,7 @@ package com.mycompany.piedrazul.domain.model;
  */
 public class Medico extends Persona {
     private String tipoProfesional;
+    private MedicoEstado estado;
 
     public Medico() {
     }
@@ -20,6 +21,14 @@ public class Medico extends Persona {
 
     public void setTipoProfesional(String tipoProfesional) {
         this.tipoProfesional = tipoProfesional;
+    }
+
+    public MedicoEstado getEstado() {
+        return estado;
+    }
+
+    public void setEstado(MedicoEstado estado) {
+        this.estado = estado;
     }
 
     @Override

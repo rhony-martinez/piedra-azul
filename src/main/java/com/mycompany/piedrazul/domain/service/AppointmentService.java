@@ -1,19 +1,18 @@
 package com.mycompany.piedrazul.domain.service;
 
-import com.mycompany.piedrazul.domain.model.AppointmentStatus;
 import com.mycompany.piedrazul.domain.builder.AppointmentDirector;
 import com.mycompany.piedrazul.domain.builder.ManualAppointmentBuilder;
+import com.mycompany.piedrazul.domain.builder.SelfServiceAppointmentBuilder;
 import com.mycompany.piedrazul.domain.model.Appointment;
 import com.mycompany.piedrazul.domain.model.Medico;
 import com.mycompany.piedrazul.domain.model.Paciente;
 import com.mycompany.piedrazul.domain.model.Usuario;
 import com.mycompany.piedrazul.domain.repository.IAppointmentRepository;
 import com.mycompany.piedrazul.domain.service.scheduler.ManualAppointmentScheduler;
+import com.mycompany.piedrazul.domain.service.scheduler.SelfServiceAppointmentScheduler;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.List;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -143,5 +142,31 @@ public class AppointmentService {
         LocalDateTime fechaHoraSinSegundos = fechaHora.withSecond(0).withNano(0);
         boolean existe = appointmentRepository.existsByMedicoAndFechaHora(medicoId, fechaHoraSinSegundos);
         return !existe; // Retorna true si NO existe (está disponible)
+    }
+
+    public Appointment crearCitaAutonoma(
+            Paciente paciente,
+            Medico medico,
+            LocalDateTime fechaHora,
+            Usuario usuario,
+            String observacion) {
+
+        // 1. Builder
+        AppointmentDirector director = new AppointmentDirector();
+        SelfServiceAppointmentBuilder builder = new SelfServiceAppointmentBuilder();
+
+        director.setBuilder(builder);
+
+        Appointment cita = director.buildSelfServiceAppointment(
+                paciente,
+                medico,
+                fechaHora,
+                usuario,
+                observacion);
+
+        // 2. Template Method
+        SelfServiceAppointmentScheduler scheduler = new SelfServiceAppointmentScheduler(appointmentRepository);
+
+        return scheduler.schedule(cita);
     }
 }
