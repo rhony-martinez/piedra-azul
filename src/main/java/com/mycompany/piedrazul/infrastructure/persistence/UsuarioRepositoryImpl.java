@@ -14,7 +14,7 @@ public class UsuarioRepositoryImpl implements IUsuarioRepository {
     public Usuario findByUsername(String username) {
 
         String sql = """
-            SELECT u.usu_id, u.username, u.usu_password, u.usu_estado,
+            SELECT u.usu_id, u.username, u.usu_password, u.usu_estado, u.per_id,
                     r.rol_nombre
             FROM Usuario u
             JOIN UsuarioRol ur ON u.usu_id = ur.usu_id
@@ -44,7 +44,7 @@ public class UsuarioRepositoryImpl implements IUsuarioRepository {
     public Usuario authenticate(String username, String passwordHash) {
 
         String sql = """
-            SELECT u.usu_id, u.username, u.usu_password, u.usu_estado,
+            SELECT u.usu_id, u.username, u.usu_password, u.usu_estado, u.per_id,
                     r.rol_nombre
             FROM Usuario u
             JOIN UsuarioRol ur ON u.usu_id = ur.usu_id
@@ -207,6 +207,7 @@ public class UsuarioRepositoryImpl implements IUsuarioRepository {
         usuario.setUsername(rs.getString("username"));
         usuario.setPasswordHash(rs.getString("usu_password"));
         usuario.setActivo("ACTIVO".equals(rs.getString("usu_estado")));
+        usuario.setPersonaId(rs.getInt("per_id"));
 
         String rolNombre = rs.getString("rol_nombre");
         usuario.setRol(Rol.valueOf(rolNombre)); 
