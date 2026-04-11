@@ -1,6 +1,5 @@
 package com.mycompany.piedrazul.domain.builder;
 
-import com.mycompany.piedrazul.domain.model.Appointment;
 import com.mycompany.piedrazul.domain.model.Paciente;
 import com.mycompany.piedrazul.domain.model.Medico;
 import com.mycompany.piedrazul.domain.model.Usuario;

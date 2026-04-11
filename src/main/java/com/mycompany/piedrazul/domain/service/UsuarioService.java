@@ -1,5 +1,6 @@
 package com.mycompany.piedrazul.domain.service;
 
+import com.mycompany.piedrazul.domain.model.MedicoEstado;
 import com.mycompany.piedrazul.domain.model.Persona;
 import com.mycompany.piedrazul.domain.model.Rol;
 import com.mycompany.piedrazul.domain.model.Usuario;
@@ -143,7 +144,8 @@ public class UsuarioService {
             case MEDICO_TERAPISTA -> {
                 System.out.println("Creando registro de médico...");
                 String tipo = "MEDICO";
-                boolean creadoMedico = medicoRepository.create(persona.getId(), tipo);
+                MedicoEstado estado = MedicoEstado.ACTIVO;
+                boolean creadoMedico = medicoRepository.create(persona.getId(), tipo, estado);
                 if (!creadoMedico) {
                     throw new RuntimeException("Error al crear médico");
                 }
