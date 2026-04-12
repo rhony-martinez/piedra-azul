@@ -32,7 +32,7 @@ public class MedicoRepositoryImpl implements IMedicoRepository {
 
             stmt.setInt(1, personaId);
             stmt.setString(2, tipoProfesional);
-            stmt.setString(4, String.valueOf(estado));
+            stmt.setString(3, String.valueOf(estado));
 
             return stmt.executeUpdate() > 0;
 

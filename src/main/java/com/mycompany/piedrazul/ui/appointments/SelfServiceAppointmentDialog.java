@@ -1,25 +1,20 @@
 package com.mycompany.piedrazul.ui.appointments;
 
-import com.mycompany.piedrazul.domain.builder.AppointmentDirector;
-import com.mycompany.piedrazul.domain.builder.SelfServiceAppointmentBuilder;
 import com.mycompany.piedrazul.domain.model.Appointment;
 import com.mycompany.piedrazul.domain.model.Medico;
 import com.mycompany.piedrazul.domain.model.Paciente;
-import com.mycompany.piedrazul.domain.model.Rol;
 import com.mycompany.piedrazul.domain.model.Usuario;
 import com.mycompany.piedrazul.domain.repository.IAppointmentRepository;
 import com.mycompany.piedrazul.domain.repository.IMedicoRepository;
 import com.mycompany.piedrazul.domain.repository.IPacienteRepository;
 import com.mycompany.piedrazul.domain.repository.IPersonaRepository;
 import com.mycompany.piedrazul.domain.repository.IUsuarioRepository;
-import com.mycompany.piedrazul.domain.service.UsuarioService;
 import com.mycompany.piedrazul.domain.service.AppointmentService;
 import com.mycompany.piedrazul.infrastructure.persistence.AppointmentRepositoryImpl;
 import com.mycompany.piedrazul.infrastructure.persistence.MedicoRepositoryImpl;
 import com.mycompany.piedrazul.infrastructure.persistence.PacienteRepositoryImpl;
 import com.mycompany.piedrazul.infrastructure.persistence.PersonaRepositoryImpl;
 import com.mycompany.piedrazul.infrastructure.persistence.UsuarioRepositoryImpl;
-import com.mycompany.piedrazul.main.Piedrazul;
 import com.toedter.calendar.JDateChooser;
 import javax.swing.*;
 import java.awt.*;
@@ -40,7 +35,6 @@ public class SelfServiceAppointmentDialog extends JFrame {
     private JComboBox<Medico> cmbMedicos;
     private JDateChooser dateChooser;
     private JComboBox<String> cmbHora;
-    private JComboBox<String> cmbTipo;
     private JTextField txtMotivo;
     private JButton btnAgendar;
     private JButton btnCancelar;

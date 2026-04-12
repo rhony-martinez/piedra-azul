@@ -143,7 +143,7 @@ public class UsuarioService {
         
             case MEDICO_TERAPISTA -> {
                 System.out.println("Creando registro de médico...");
-                String tipo = "MEDICO";
+                String tipo = "MEDICO"; // Hay que cambiar esto a futuro
                 MedicoEstado estado = MedicoEstado.ACTIVO;
                 boolean creadoMedico = medicoRepository.create(persona.getId(), tipo, estado);
                 if (!creadoMedico) {
