@@ -23,11 +23,14 @@ public class AppointmentFacade {
 
     private final AppointmentService appointmentService;
     private final IAppointmentRepository appointmentRepository;
+    private ManualAppointmentScheduler scheduler;
 
     public AppointmentFacade(AppointmentService appointmentService,
             IAppointmentRepository appointmentRepository) {
         this.appointmentService = appointmentService;
         this.appointmentRepository = appointmentRepository;
+
+        scheduler = new ManualAppointmentScheduler(appointmentRepository);
     }
 
     public Appointment crearCitaManual(
@@ -50,7 +53,7 @@ public class AppointmentFacade {
                 observacion);
 
         // 2. Scheduler (Template Method)
-        ManualAppointmentScheduler scheduler = new ManualAppointmentScheduler(appointmentRepository);
+        
 
         scheduler.schedule(cita);
 
