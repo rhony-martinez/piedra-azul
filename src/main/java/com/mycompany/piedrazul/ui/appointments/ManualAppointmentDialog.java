@@ -3,6 +3,7 @@ package com.mycompany.piedrazul.ui.appointments;
 import com.mycompany.piedrazul.domain.model.*;
 import com.mycompany.piedrazul.domain.repository.*;
 import com.mycompany.piedrazul.domain.service.AppointmentService;
+import com.mycompany.piedrazul.domain.service.facade.AppointmentFacade;
 import com.mycompany.piedrazul.infrastructure.persistence.*;
 import com.toedter.calendar.JDateChooser;
 import javax.swing.*;
@@ -18,6 +19,7 @@ import java.util.List;
 public class ManualAppointmentDialog extends JFrame {
 
     private Usuario usuarioActual;
+    private AppointmentFacade appointmentFacade;
     private AppointmentService appointmentService;
     private IPacienteRepository pacienteRepository;
     private IMedicoRepository medicoRepository;
@@ -449,7 +451,7 @@ public class ManualAppointmentDialog extends JFrame {
 
     private void cargarMedicos() {
         cmbMedicos.removeAllItems();
-        List<Medico> medicos = medicoRepository.findAll();
+        List<Medico> medicos = medicoRepository.findAllActivos();
 
         if (medicos.isEmpty()) {
             cmbMedicos.addItem(null);
@@ -721,7 +723,7 @@ public class ManualAppointmentDialog extends JFrame {
                     "Creando cita para paciente ID: " + paciente.getId() + ", médico: " + medico.getPrimerNombre());
 
             // Crear la cita
-            Appointment cita = appointmentService.crearCitaManual(
+            Appointment cita = appointmentFacade.crearCitaManual(
                     paciente,
                     medico,
                     fechaHora,

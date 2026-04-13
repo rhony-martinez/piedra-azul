@@ -562,7 +562,7 @@ public class AgendarCitaDialog extends JFrame {
     
     private void cargarMedicos() {
         cmbMedicos.removeAllItems();
-        List<Medico> medicos = medicoRepository.findAll();
+        List<Medico> medicos = medicoRepository.findAllActivos();
         
         if (medicos.isEmpty()) {
             cmbMedicos.addItem(null);
