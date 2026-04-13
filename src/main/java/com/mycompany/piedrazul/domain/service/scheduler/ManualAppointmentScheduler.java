@@ -35,13 +35,21 @@ public class ManualAppointmentScheduler extends AppointmentScheduler {
                 .withNano(0);
 
         appointment.setFechaHora(fechaNormalizada);
-        
+
         boolean ocupado = repository.existsByMedicoAndFechaHora(
                 appointment.getMedico().getId(),
                 appointment.getFechaHora());
+        
+        boolean agendado = repository.existsByPacienteAndFecha(
+            appointment.getPaciente().getId(),
+            appointment.getFechaHora());
 
         if (ocupado) {
             throw new IllegalStateException("El médico ya tiene una cita en ese horario");
+        }
+
+        if (agendado) {
+            throw new IllegalStateException("El paciente ya tiene una cita en ese horario");
         }
     }
 
