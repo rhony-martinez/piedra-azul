@@ -52,9 +52,9 @@ public class AppointmentFacade {
         // 2. Scheduler (Template Method)
         ManualAppointmentScheduler scheduler = new ManualAppointmentScheduler(appointmentRepository);
 
-        Appointment citaAgendada = scheduler.schedule(cita);
+        scheduler.schedule(cita);
 
         // 3. Persistencia (delegada al service)
-        return appointmentService.crearCita(citaAgendada);
+        return appointmentService.crearCita(cita);
     }
 }

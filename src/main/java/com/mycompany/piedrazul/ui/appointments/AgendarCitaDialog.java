@@ -3,6 +3,7 @@ package com.mycompany.piedrazul.ui.appointments;
 import com.mycompany.piedrazul.domain.model.*;
 import com.mycompany.piedrazul.domain.repository.*;
 import com.mycompany.piedrazul.domain.service.AppointmentService;
+import com.mycompany.piedrazul.domain.service.facade.AppointmentFacade;
 import com.mycompany.piedrazul.infrastructure.persistence.*;
 import com.toedter.calendar.JDateChooser;
 import javax.swing.*;
@@ -19,6 +20,7 @@ public class AgendarCitaDialog extends JFrame {
 
     private Usuario usuarioActual;
     private AppointmentService appointmentService;
+    private AppointmentFacade appointmentFacade;
     private IPacienteRepository pacienteRepository;
     private IMedicoRepository medicoRepository;
     private IPersonaRepository personaRepository;
@@ -60,10 +62,13 @@ public class AgendarCitaDialog extends JFrame {
         this.medicoRepository = new MedicoRepositoryImpl();
         this.personaRepository = new PersonaRepositoryImpl();
         
+        
         IAppointmentRepository appointmentRepo = new AppointmentRepositoryImpl(
             usuarioRepo, pacienteRepository, medicoRepository
         );
         this.appointmentService = new AppointmentService(appointmentRepo);
+
+        this.appointmentFacade = new AppointmentFacade(appointmentService, appointmentRepo);
         
         initComponents();
         cargarMedicos();
@@ -694,7 +699,7 @@ public class AgendarCitaDialog extends JFrame {
                 return;
             }
             
-            appointmentService.crearCitaManual(
+            appointmentFacade.crearCitaManual(
                 paciente,
                 medico,
                 fechaHora,

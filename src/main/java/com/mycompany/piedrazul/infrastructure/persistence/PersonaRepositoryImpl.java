@@ -9,7 +9,6 @@ import com.mycompany.piedrazul.domain.repository.IPersonaRepository;
 import com.mycompany.piedrazul.infrastructure.persistence.connection.ConnectionFactory;
 
 import java.sql.*;
-import java.time.LocalDate;
 
 /**
  *

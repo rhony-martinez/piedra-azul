@@ -24,13 +24,11 @@ public abstract class AppointmentScheduler {
         this.repository = repository;
     }
 
-    public final Appointment schedule(Appointment appointment) {
+    public final void schedule(Appointment appointment) {
         validateUser(appointment);
         checkAvailability(appointment);
         assignProfessional(appointment);
         confirmAppointment(appointment);
-
-        return save(appointment);
     }
 
     protected abstract void validateUser(Appointment appointment);
@@ -40,8 +38,4 @@ public abstract class AppointmentScheduler {
     protected abstract void assignProfessional(Appointment appointment);
 
     protected abstract void confirmAppointment(Appointment appointment);
-
-    protected Appointment save(Appointment appointment) {
-        return repository.save(appointment);
-    }
 }

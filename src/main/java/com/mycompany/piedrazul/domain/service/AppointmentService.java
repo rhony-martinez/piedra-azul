@@ -86,32 +86,6 @@ public class AppointmentService {
      * }
      */
 
-    public Appointment crearCitaManual(
-            Paciente paciente,
-            Medico medico,
-            LocalDateTime fechaHora,
-            Usuario usuarioCreador,
-            String observacion) {
-
-        // 1. Construcción (Usando Builder)
-        AppointmentDirector director = new AppointmentDirector();
-        ManualAppointmentBuilder builder = new ManualAppointmentBuilder();
-
-        director.setBuilder(builder);
-
-        Appointment cita = director.buildManualAppointment(
-                paciente,
-                medico,
-                fechaHora,
-                usuarioCreador,
-                observacion);
-
-        // 2. Template Method (NUEVO)
-        ManualAppointmentScheduler scheduler = new ManualAppointmentScheduler(appointmentRepository);
-
-        return scheduler.schedule(cita);
-    }
-
     // Obtener citas por médico y fecha
     public List<Appointment> obtenerCitasPorMedicoYFecha(int medicoId, LocalDate fecha) {
         List<Appointment> todas = appointmentRepository.findAll();
@@ -150,23 +124,20 @@ public class AppointmentService {
             LocalDateTime fechaHora,
             Usuario usuario,
             String observacion) {
-
         // 1. Builder
         AppointmentDirector director = new AppointmentDirector();
         SelfServiceAppointmentBuilder builder = new SelfServiceAppointmentBuilder();
-
         director.setBuilder(builder);
-
         Appointment cita = director.buildSelfServiceAppointment(
                 paciente,
                 medico,
                 fechaHora,
                 usuario,
                 observacion);
-
         // 2. Template Method
         SelfServiceAppointmentScheduler scheduler = new SelfServiceAppointmentScheduler(appointmentRepository);
+        scheduler.schedule(cita);
 
-        return scheduler.schedule(cita);
+        return crearCita(cita);
     }
 }

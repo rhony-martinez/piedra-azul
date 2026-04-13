@@ -15,7 +15,7 @@ public class SelfServiceAppointmentBuilder extends AppointmentBuilder {
     public void crearNueva() {
         super.crearNueva();
 
-        //  NO seteamos estado aquí → lo hace el Template (correcto diseño)
+        //  NO seteamos estado aquí, lo hace el Template
         appointment.setCreadoEn(LocalDateTime.now());
     }
 

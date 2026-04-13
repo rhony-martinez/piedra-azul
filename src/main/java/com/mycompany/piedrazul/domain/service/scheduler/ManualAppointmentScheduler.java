@@ -4,6 +4,8 @@
  */
 package com.mycompany.piedrazul.domain.service.scheduler;
 
+import java.time.LocalDateTime;
+
 import com.mycompany.piedrazul.domain.model.Appointment;
 import com.mycompany.piedrazul.domain.model.AppointmentStatus;
 import com.mycompany.piedrazul.domain.repository.IAppointmentRepository;
@@ -27,10 +29,16 @@ public class ManualAppointmentScheduler extends AppointmentScheduler {
 
     @Override
     protected void checkAvailability(Appointment appointment) {
+
+        LocalDateTime fechaNormalizada = appointment.getFechaHora()
+                .withSecond(0)
+                .withNano(0);
+
+        appointment.setFechaHora(fechaNormalizada);
+        
         boolean ocupado = repository.existsByMedicoAndFechaHora(
                 appointment.getMedico().getId(),
-                appointment.getFechaHora()
-        );
+                appointment.getFechaHora());
 
         if (ocupado) {
             throw new IllegalStateException("El médico ya tiene una cita en ese horario");
@@ -39,7 +47,7 @@ public class ManualAppointmentScheduler extends AppointmentScheduler {
 
     @Override
     protected void assignProfessional(Appointment appointment) {
-        // En manual ya viene asignado → no hacer nada
+        // En manual ya viene asignado, no hacer nada
     }
 
     @Override
