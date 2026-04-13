@@ -53,8 +53,6 @@ public class AppointmentFacade {
                 observacion);
 
         // 2. Scheduler (Template Method)
-        
-
         scheduler.schedule(cita);
 
         // 3. Persistencia (delegada al service)
