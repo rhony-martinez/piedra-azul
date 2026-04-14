@@ -3,6 +3,7 @@ package com.mycompany.piedrazul.ui.appointments;
 import com.mycompany.piedrazul.domain.model.*;
 import com.mycompany.piedrazul.domain.repository.*;
 import com.mycompany.piedrazul.domain.service.AppointmentService;
+import com.mycompany.piedrazul.domain.service.NotificationService;
 import com.mycompany.piedrazul.domain.service.facade.AppointmentFacade;
 import com.mycompany.piedrazul.infrastructure.persistence.*;
 import com.toedter.calendar.JDateChooser;
@@ -20,10 +21,12 @@ public class AgendarCitaDialog extends JFrame {
 
     private Usuario usuarioActual;
     private AppointmentService appointmentService;
+    private NotificationService notificationService;
     private AppointmentFacade appointmentFacade;
     private IPacienteRepository pacienteRepository;
     private IMedicoRepository medicoRepository;
     private IPersonaRepository personaRepository;
+    private INotificationRepository notificacionRepository;
     private JFrame parentFrame;
 
     // Selección de paciente
@@ -61,14 +64,16 @@ public class AgendarCitaDialog extends JFrame {
         this.pacienteRepository = new PacienteRepositoryImpl();
         this.medicoRepository = new MedicoRepositoryImpl();
         this.personaRepository = new PersonaRepositoryImpl();
+        this.notificacionRepository = new NotificationRepositoryImpl();
         
         
         IAppointmentRepository appointmentRepo = new AppointmentRepositoryImpl(
             usuarioRepo, pacienteRepository, medicoRepository
         );
         this.appointmentService = new AppointmentService(appointmentRepo);
+        this.notificationService = new NotificationService(notificacionRepository);
 
-        this.appointmentFacade = new AppointmentFacade(appointmentService, appointmentRepo);
+        this.appointmentFacade = new AppointmentFacade(appointmentService, appointmentRepo, notificationService, usuarioRepo);
         
         initComponents();
         cargarMedicos();

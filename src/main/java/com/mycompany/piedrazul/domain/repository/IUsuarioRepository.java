@@ -14,5 +14,6 @@ public interface IUsuarioRepository {
     void registrarIntentoFallido(String username);
     void resetearIntentosFallidos(String username);
     Usuario findById(int id);
+    Usuario findByPersonaId(int personaId);
 }
 

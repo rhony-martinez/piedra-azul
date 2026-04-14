@@ -11,7 +11,9 @@ import com.mycompany.piedrazul.domain.model.Medico;
 import com.mycompany.piedrazul.domain.model.Paciente;
 import com.mycompany.piedrazul.domain.model.Usuario;
 import com.mycompany.piedrazul.domain.repository.IAppointmentRepository;
+import com.mycompany.piedrazul.domain.repository.IUsuarioRepository;
 import com.mycompany.piedrazul.domain.service.AppointmentService;
+import com.mycompany.piedrazul.domain.service.NotificationService;
 import com.mycompany.piedrazul.domain.service.scheduler.ManualAppointmentScheduler;
 import java.time.LocalDateTime;
 
@@ -22,15 +24,22 @@ import java.time.LocalDateTime;
 public class AppointmentFacade {
 
     private final AppointmentService appointmentService;
+    private final NotificationService notificationService;
     private final IAppointmentRepository appointmentRepository;
+    private final IUsuarioRepository usuarioRepository;
     private ManualAppointmentScheduler scheduler;
 
     public AppointmentFacade(AppointmentService appointmentService,
-            IAppointmentRepository appointmentRepository) {
+            IAppointmentRepository appointmentRepository,
+            NotificationService notificationService,
+            IUsuarioRepository usuarioRepository) {
+
         this.appointmentService = appointmentService;
         this.appointmentRepository = appointmentRepository;
+        this.notificationService = notificationService;
+        this.usuarioRepository = usuarioRepository;
 
-        scheduler = new ManualAppointmentScheduler(appointmentRepository);
+        this.scheduler = new ManualAppointmentScheduler(appointmentRepository);
     }
 
     public Appointment crearCitaManual(
@@ -55,7 +64,23 @@ public class AppointmentFacade {
         // 2. Scheduler (Template Method)
         scheduler.schedule(cita);
 
-        // 3. Persistencia (delegada al service)
-        return appointmentService.crearCita(cita);
+        // 3. Persistencia delegada a service y repository
+        Appointment guardada = appointmentService.crearCita(cita);
+
+        Usuario usuarioPaciente = usuarioRepository
+                .findByPersonaId(cita.getPaciente().getId());
+
+        if (usuarioPaciente != null) {
+            String mensaje = construirMensaje(guardada);
+            notificationService.notifyUser(usuarioPaciente, mensaje);
+        }
+
+        return guardada;
+    }
+
+    private String construirMensaje(Appointment cita) {
+        return "Cita confirmada:\n" +
+                " " + cita.getFechaHora().toLocalDate() +
+                "\n " + cita.getFechaHora().toLocalTime();
     }
 }
