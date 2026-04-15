@@ -1,10 +1,15 @@
 package com.mycompany.piedrazul.main;
 
 import com.mycompany.piedrazul.domain.builder.*;
+import com.mycompany.piedrazul.domain.model.Paciente;
 //import com.mycompany.piedrazul.domain.model.Appointment;
 import com.mycompany.piedrazul.domain.model.Rol;
 import com.mycompany.piedrazul.domain.model.Usuario;
 import com.mycompany.piedrazul.domain.service.UsuarioService;
+import com.mycompany.piedrazul.domain.service.adapter.ExternalPatientAdapter;
+import com.mycompany.piedrazul.domain.service.adapter.ExternalService;
+import com.mycompany.piedrazul.domain.service.adapter.PatientDataProvider;
+import com.mycompany.piedrazul.domain.service.adapter.PatientIntegrationService;
 import com.mycompany.piedrazul.infrastructure.persistence.MedicoRepositoryImpl;
 import com.mycompany.piedrazul.infrastructure.persistence.PacienteRepositoryImpl;
 import com.mycompany.piedrazul.infrastructure.persistence.PersonaRepositoryImpl;
@@ -23,6 +28,16 @@ public class Piedrazul {
         PersonaRepositoryImpl personaRepository = new PersonaRepositoryImpl();
         PacienteRepositoryImpl pacienteRepository  = new PacienteRepositoryImpl();
         MedicoRepositoryImpl medicoRepository = new MedicoRepositoryImpl();
+        
+        // Prueba del patrón Adapter
+        ExternalService externalService = new ExternalService();
+        PatientDataProvider adapter = new ExternalPatientAdapter(externalService);
+
+        PatientIntegrationService service = new PatientIntegrationService(adapter);
+
+        Paciente paciente = service.obtenerPacienteExterno();
+
+        System.out.println(paciente);
         
         usuarioService = new UsuarioService(ususarioRepository, personaRepository, pacienteRepository, medicoRepository);
         
