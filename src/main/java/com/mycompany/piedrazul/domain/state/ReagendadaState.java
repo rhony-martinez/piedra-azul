@@ -24,10 +24,10 @@ public class ReagendadaState implements AppointmentState {
         throw new IllegalStateException("Debe confirmar la nueva fecha antes de marcar no asistencia");
     }
     
-    @Override
-    public void reagendar(Appointment cita) {
-        throw new IllegalStateException("La cita ya fue reagendada, solo se permite una vez");
-    }
+  @Override
+public void reagendar(Appointment cita) {
+    throw new IllegalStateException("La cita ya fue reagendada, solo se permite una vez");
+}
     
     @Override
     public void cancelar(Appointment cita) {

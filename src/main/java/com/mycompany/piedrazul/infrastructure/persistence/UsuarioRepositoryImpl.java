@@ -187,19 +187,18 @@ public class UsuarioRepositoryImpl implements IUsuarioRepository {
     }
     
     @Override
-    public void resetearIntentosFallidos(String username) {
-        String sql = "UPDATE usuarios SET intentos_fallidos = 0 WHERE username = ?";
-        
-        try (Connection conn = ConnectionFactory.getConnection();
-            PreparedStatement stmt = conn.prepareStatement(sql)) {
-            
-            stmt.setString(1, username);
-            stmt.executeUpdate();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
+public void resetearIntentosFallidos(String username) {
+    String sql = "UPDATE Usuario SET intentos_fallidos = 0 WHERE username = ?";  // ← "usuarios" → "Usuario"
     
+    try (Connection conn = ConnectionFactory.getConnection();
+         PreparedStatement stmt = conn.prepareStatement(sql)) {
+        
+        stmt.setString(1, username);
+        stmt.executeUpdate();
+    } catch (SQLException e) {
+        e.printStackTrace();
+    }
+}
     private Usuario mapResultSetToUsuario(ResultSet rs) throws SQLException {
         Usuario usuario = new Usuario();
 
@@ -214,25 +213,24 @@ public class UsuarioRepositoryImpl implements IUsuarioRepository {
         return usuario;
     }
     
-    @Override
-    public Usuario findById(int id) {
-        String sql = "SELECT * FROM usuarios WHERE id = ?";
-
-        try (Connection conn = ConnectionFactory.getConnection();
-            PreparedStatement stmt = conn.prepareStatement(sql)) {
-
-            stmt.setInt(1, id);
-            ResultSet rs = stmt.executeQuery();
-
-            if (rs.next()) {
-                return mapResultSetToUsuario(rs);
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
+   @Override
+public Usuario findById(int id) {
+    String sql = "SELECT u.usu_id, u.username, u.usu_password, u.usu_estado, r.rol_nombre FROM Usuario u JOIN UsuarioRol ur ON u.usu_id = ur.usu_id JOIN Rol r ON ur.rol_id = r.rol_id WHERE u.usu_id = ?";
+    
+    try (Connection conn = ConnectionFactory.getConnection();
+         PreparedStatement stmt = conn.prepareStatement(sql)) {
+        
+        stmt.setInt(1, id);
+        ResultSet rs = stmt.executeQuery();
+        
+        if (rs.next()) {
+            return mapResultSetToUsuario(rs);
         }
-        return null;
+    } catch (SQLException e) {
+        e.printStackTrace();
     }
-
+    return null;
+}
     @Override
     public boolean update(Usuario usuario) {
         throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody

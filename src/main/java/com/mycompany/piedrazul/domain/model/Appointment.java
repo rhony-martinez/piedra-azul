@@ -143,6 +143,17 @@ public class Appointment {
         appointmentState.cancelar(this); 
     }
     
+    // Método para el patrón Decorator
+    public String getDescription() {
+        String medicoNombre = (medico != null) ? medico.getPrimerNombre() + " " + medico.getPrimerApellido() : "médico";
+        String pacienteNombre = (paciente != null) ? paciente.getPrimerNombre() + " " + paciente.getPrimerApellido() : "paciente";
+        String fechaStr = (fechaHora != null) ? fechaHora.toString() : "fecha no definida";
+        
+        return "Cita #" + id + " | Paciente: " + pacienteNombre + " | Médico: " + medicoNombre + 
+               " | Fecha: " + fechaStr + " | Estado: " + estado + 
+               (observacion != null && !observacion.isEmpty() ? " | Obs: " + observacion : "");
+    }
+    
     @Override
     public String toString() {
         return "Appointment{" +

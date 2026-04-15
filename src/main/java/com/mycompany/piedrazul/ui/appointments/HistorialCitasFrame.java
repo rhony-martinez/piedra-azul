@@ -33,7 +33,6 @@ public class HistorialCitasFrame extends JFrame {
     private JFrame parentFrame;
     private JLabel lblTotalCitas;
 
-    // Componentes de búsqueda
     private JComboBox<Medico> cmbMedicos;
     private JDateChooser dateChooser;
     private JButton btnBuscar;
@@ -68,7 +67,6 @@ public class HistorialCitasFrame extends JFrame {
         JPanel mainPanel = new JPanel(new BorderLayout());
         mainPanel.setBackground(new Color(220, 220, 220));
 
-        // Barra superior
         JPanel topBar = new JPanel(new BorderLayout());
         topBar.setBackground(new Color(40, 170, 200));
         topBar.setPreferredSize(new Dimension(800, 80));
@@ -94,12 +92,10 @@ public class HistorialCitasFrame extends JFrame {
         topBar.add(lblTitulo, BorderLayout.WEST);
         topBar.add(btnVolver, BorderLayout.EAST);
         
-        // Panel central
         JPanel centerPanel = new JPanel(new BorderLayout());
         centerPanel.setBackground(new Color(220, 220, 220));
         centerPanel.setBorder(BorderFactory.createEmptyBorder(20, 40, 20, 40));
 
-        // Panel de búsqueda
         JPanel busquedaPanel = new JPanel();
         busquedaPanel.setBackground(Color.WHITE);
         busquedaPanel.setBorder(BorderFactory.createTitledBorder(
@@ -157,7 +153,6 @@ public class HistorialCitasFrame extends JFrame {
         
         centerPanel.add(busquedaPanel, BorderLayout.NORTH);
         
-        // Panel de resultados
         JPanel resultadosPanel = new JPanel(new BorderLayout());
         resultadosPanel.setBackground(Color.WHITE);
         resultadosPanel.setBorder(BorderFactory.createTitledBorder(
@@ -200,7 +195,6 @@ public class HistorialCitasFrame extends JFrame {
         
         resultadosPanel.add(scrollPane, BorderLayout.CENTER);
         
-        // ===== NUEVO: Panel de botones de estado =====
         JPanel botonesEstadoPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 15, 10));
         botonesEstadoPanel.setBackground(Color.WHITE);
         botonesEstadoPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
@@ -249,7 +243,6 @@ public class HistorialCitasFrame extends JFrame {
         botonesEstadoPanel.add(btnReagendar);
         
         resultadosPanel.add(botonesEstadoPanel, BorderLayout.NORTH);
-        // ===== FIN NUEVO =====
         
         JPanel totalPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         totalPanel.setBackground(Color.WHITE);
@@ -264,7 +257,6 @@ public class HistorialCitasFrame extends JFrame {
         
         centerPanel.add(resultadosPanel, BorderLayout.CENTER);
         
-        // Panel inferior
         JPanel bottomPanel = new JPanel(new BorderLayout());
         bottomPanel.setBackground(new Color(220, 220, 220));
         bottomPanel.setBorder(BorderFactory.createEmptyBorder(10, 0, 20, 40));
@@ -282,27 +274,17 @@ public class HistorialCitasFrame extends JFrame {
         add(mainPanel);
     }
     
-    // ===== NUEVO MÉTODO: Cambiar estado de la cita seleccionada =====
     private void cambiarEstadoCita(String accion) {
         int filaSeleccionada = table.getSelectedRow();
         if (filaSeleccionada == -1) {
-            JOptionPane.showMessageDialog(this, 
-                "Por favor, seleccione una cita de la tabla", 
-                "Selección requerida", 
-                JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Seleccione una cita", "Error", JOptionPane.WARNING_MESSAGE);
             return;
         }
         
         int citaId = (int) tableModel.getValueAt(filaSeleccionada, 0);
-         // ===== AGREGAR ESTAS LÍNEAS DE DEPURACIÓN =====
-        System.out.println("=== DEPURACIÓN ===");
-        System.out.println("ID seleccionado de la tabla: " + citaId);
-        System.out.println("Tipo de dato: " + ((Object)citaId).getClass().getSimpleName());
-        // ============================================
+        
         try {
-            // Obtener la cita completa del repositorio
             Appointment cita = appointmentService.obtenerCitaPorId(citaId);
-            
             if (cita == null) {
                 JOptionPane.showMessageDialog(this, "No se encontró la cita", "Error", JOptionPane.ERROR_MESSAGE);
                 return;
@@ -311,68 +293,85 @@ public class HistorialCitasFrame extends JFrame {
             String mensajeExito = "";
             String estadoAnterior = cita.getEstado().toString();
             
-            // Aplicar la acción usando el patrón State
             switch (accion) {
                 case "confirmar":
+                    System.out.println("=== CONFIRMAR ===");
+                    System.out.println("Cita ID: " + cita.getId());
+                    System.out.println("Estado antes: " + cita.getEstado());
                     cita.confirmar();
+                    System.out.println("Estado después: " + cita.getEstado());
                     mensajeExito = "Cita confirmada correctamente";
                     break;
+                    
                 case "atender":
+                    System.out.println("=== ATENDER ===");
+                    System.out.println("Cita ID: " + cita.getId());
+                    System.out.println("Estado antes: " + cita.getEstado());
+                    
+                    if (cita.getEstado() != AppointmentStatus.CONFIRMADA) {
+                        JOptionPane.showMessageDialog(this, 
+                            "Solo se pueden atender citas CONFIRMADAS.\nEstado actual: " + cita.getEstado(),
+                            "Error", JOptionPane.ERROR_MESSAGE);
+                        return;
+                    }
+                    
+                    System.out.println("Llamando a cita.atender()...");
                     cita.atender();
+                    System.out.println("Estado después: " + cita.getEstado());
                     mensajeExito = "Cita atendida correctamente";
                     break;
+                    
                 case "cancelar":
-                    int confirm = JOptionPane.showConfirmDialog(this, 
-                        "¿Está seguro de cancelar esta cita?", 
-                        "Confirmar cancelación", 
-                        JOptionPane.YES_NO_OPTION);
+                    int confirm = JOptionPane.showConfirmDialog(this, "¿Cancelar esta cita?", "Confirmar", JOptionPane.YES_NO_OPTION);
                     if (confirm != JOptionPane.YES_OPTION) return;
                     cita.cancelar();
                     mensajeExito = "Cita cancelada";
                     break;
+                    
                 case "noAsistir":
                     cita.noAsistir();
                     mensajeExito = "Paciente marcado como No Asistió";
                     break;
+                    
                 case "reagendar":
-                    String nuevaHora = JOptionPane.showInputDialog(this, 
+                    String nuevaHoraStr = JOptionPane.showInputDialog(this, 
                         "Ingrese nueva hora (HH:MM):", 
                         "Reagendar cita", 
                         JOptionPane.QUESTION_MESSAGE);
-                    if (nuevaHora == null || nuevaHora.trim().isEmpty()) return;
+                    if (nuevaHoraStr == null || nuevaHoraStr.trim().isEmpty()) return;
+                    
+                    String[] partes = nuevaHoraStr.split(":");
+                    int nuevaHora = Integer.parseInt(partes[0]);
+                    int nuevoMinuto = Integer.parseInt(partes[1]);
+                    
+                    LocalDateTime nuevaFechaHora = cita.getFechaHora()
+                        .withHour(nuevaHora)
+                        .withMinute(nuevoMinuto);
+                    cita.setFechaHora(nuevaFechaHora);
                     cita.reagendar();
-                    mensajeExito = "Cita reagendada. Pendiente de confirmar nueva fecha/hora";
+                    mensajeExito = "Cita reagendada para las " + nuevaHoraStr;
                     break;
             }
             
-            // Guardar cambios en la base de datos
             boolean actualizado = appointmentService.actualizarCita(cita);
             if (!actualizado) {
-                JOptionPane.showMessageDialog(this, "Error al guardar los cambios", "Error", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(this, "Error al guardar", "Error", JOptionPane.ERROR_MESSAGE);
                 return;
             }
             
             JOptionPane.showMessageDialog(this, 
-                mensajeExito + "\nEstado anterior: " + estadoAnterior + "\nNuevo estado: " + cita.getEstado(),
-                "Éxito", 
-                JOptionPane.INFORMATION_MESSAGE);
+                mensajeExito + "\nEstado: " + estadoAnterior + " → " + cita.getEstado(),
+                "Éxito", JOptionPane.INFORMATION_MESSAGE);
             
-            // Refrescar la tabla
             buscarCitas();
             
         } catch (IllegalStateException e) {
-            JOptionPane.showMessageDialog(this, 
-                "❌ Transición no válida: " + e.getMessage(),
-                "Error de estado", 
-                JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Transición no válida: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, 
-                "Error: " + e.getMessage(),
-                "Error", 
-                JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Error: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            e.printStackTrace();
         }
     }
-    // ===== FIN NUEVO MÉTODO =====
     
     private void cargarMedicos() {
         cmbMedicos.removeAllItems();
