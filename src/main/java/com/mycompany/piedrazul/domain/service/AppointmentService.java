@@ -132,4 +132,13 @@ public List<Appointment> obtenerTodasLasCitas() {
         boolean existe = appointmentRepository.existsByMedicoAndFechaHora(medicoId, fechaHoraSinSegundos);
         return !existe; // Retorna true si NO existe (está disponible)
     }
+    
+    
+    public Appointment obtenerCitaPorId(int id) {
+        return appointmentRepository.findById(id);
+    }
+
+    public boolean actualizarCita(Appointment appointment) {
+        return appointmentRepository.update(appointment);
+    }
 }

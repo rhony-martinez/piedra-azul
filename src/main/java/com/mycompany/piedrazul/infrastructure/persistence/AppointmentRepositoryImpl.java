@@ -76,7 +76,9 @@ public Appointment save(Appointment appointment) {
 
     @Override
     public Appointment findById(int id) {
-        String sql = "SELECT * FROM Cita WHERE id = ?";
+        System.out.println("🔍 findById() llamado con ID: " + id);
+
+        String sql = "SELECT * FROM Cita WHERE cita_id = ?";
 
         try (Connection conn = ConnectionFactory.getConnection();
                 PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -84,10 +86,17 @@ public Appointment save(Appointment appointment) {
             stmt.setInt(1, id);
             ResultSet rs = stmt.executeQuery();
 
+            System.out.println("Ejecutando SQL: " + sql);
+            System.out.println("Parámetro ID: " + id);
+
             if (rs.next()) {
+                System.out.println("✅ Cita encontrada en BD");
                 return map(rs);
+            } else {
+                System.out.println("❌ No se encontró cita con ID: " + id);
             }
         } catch (SQLException e) {
+            System.err.println("Error SQL: " + e.getMessage());
             e.printStackTrace();
         }
         return null;
@@ -197,17 +206,38 @@ public List<Appointment> findAll() {
 
     @Override
     public boolean update(Appointment appointment) {
-        String sql = "UPDATE Cita SET date_time = ?, status = ?, notes = ? WHERE id = ?";
+        System.out.println("=== ACTUALIZANDO CITA ===");
+        System.out.println("ID: " + appointment.getId());
+        System.out.println("Nuevo estado: " + appointment.getEstado());
+        System.out.println("Fecha/Hora: " + appointment.getFechaHora());
+        System.out.println("Observación: " + appointment.getObservacion());
+
+        String sql = "UPDATE Cita SET fecha_hora_cita = ?, cita_estado = ?, observacion = ? WHERE cita_id = ?";
+
         try (Connection conn = ConnectionFactory.getConnection();
                 PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setString(1, appointment.getFechaHora().format(formatter));
+
+            stmt.setTimestamp(1, Timestamp.valueOf(appointment.getFechaHora()));
             stmt.setString(2, appointment.getEstado().name());
             stmt.setString(3, appointment.getObservacion());
             stmt.setInt(4, appointment.getId());
+
+            System.out.println("SQL: " + sql);
+            System.out.println("Parámetros: fecha=" + appointment.getFechaHora() + 
+                               ", estado=" + appointment.getEstado().name() + 
+                               ", obs=" + appointment.getObservacion() + 
+                               ", id=" + appointment.getId());
+
             int affected = stmt.executeUpdate();
-            System.out.println("Actualizando cita " + appointment.getId() + " a estado: " + appointment.getEstado());
-            return affected > 0;
+            System.out.println("Filas afectadas: " + affected);
+
+            boolean resultado = affected > 0;
+            System.out.println("Resultado: " + resultado);
+
+            return resultado;
+
         } catch (SQLException e) {
+            System.err.println("❌ Error SQL en update: " + e.getMessage());
             e.printStackTrace();
             return false;
         }
