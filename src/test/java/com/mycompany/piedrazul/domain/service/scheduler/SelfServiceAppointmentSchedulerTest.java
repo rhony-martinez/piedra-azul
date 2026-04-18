@@ -87,7 +87,8 @@ class SelfServiceAppointmentSchedulerTest {
     void testCheckAvailabilityFechaPasada() {
         appointment.setFechaHora(LocalDateTime.now().minusDays(1));
 
-        IllegalStateException exception = assertThrows(IllegalStateException.class, () -> scheduler.schedule(appointment));
+        IllegalStateException exception = assertThrows(IllegalStateException.class,
+                () -> scheduler.schedule(appointment));
         assertEquals("No puede agendar en el pasado", exception.getMessage());
     }
 
@@ -96,7 +97,8 @@ class SelfServiceAppointmentSchedulerTest {
     void testCheckAvailabilityFueraDelLimite() {
         appointment.setFechaHora(LocalDateTime.now().plusDays(31));
 
-        IllegalStateException exception = assertThrows(IllegalStateException.class, () -> scheduler.schedule(appointment));
+        IllegalStateException exception = assertThrows(IllegalStateException.class,
+                () -> scheduler.schedule(appointment));
         assertEquals("No puede agendar una cita más allá del límite permitido", exception.getMessage());
     }
 
@@ -105,7 +107,8 @@ class SelfServiceAppointmentSchedulerTest {
     void testCheckAvailabilityPacienteOcupado() {
         when(appointmentRepository.existsByPacienteAndFecha(anyInt(), any())).thenReturn(true);
 
-        IllegalStateException exception = assertThrows(IllegalStateException.class, () -> scheduler.schedule(appointment));
+        IllegalStateException exception = assertThrows(IllegalStateException.class,
+                () -> scheduler.schedule(appointment));
         assertEquals("Usted ya tiene una cita en este horario", exception.getMessage());
     }
 
@@ -115,19 +118,32 @@ class SelfServiceAppointmentSchedulerTest {
         when(appointmentRepository.existsByPacienteAndFecha(anyInt(), any())).thenReturn(false);
         when(appointmentRepository.existsByMedicoAndFechaHora(anyInt(), any())).thenReturn(true);
 
-        IllegalStateException exception = assertThrows(IllegalStateException.class, () -> scheduler.schedule(appointment));
+        IllegalStateException exception = assertThrows(IllegalStateException.class,
+                () -> scheduler.schedule(appointment));
         assertEquals("Horario no disponible para agendamiento", exception.getMessage());
     }
 
     @Test
-    @DisplayName("Debe dejar la cita en estado PROGRAMADA y asignar fecha de creación")
+    @DisplayName("Debe dejar la cita en estado CONFIRMADA")
     void testConfirmAppointment() {
+        // Arrange
         when(appointmentRepository.existsByPacienteAndFecha(anyInt(), any())).thenReturn(false);
         when(appointmentRepository.existsByMedicoAndFechaHora(anyInt(), any())).thenReturn(false);
 
+        // Act
         scheduler.schedule(appointment);
 
-        assertEquals(AppointmentStatus.PROGRAMADA, appointment.getEstado());
-        assertNotNull(appointment.getCreadoEn());
+        // Assert
+        assertEquals(AppointmentStatus.CONFIRMADA, appointment.getEstado());
+    }
+
+    @Test
+    @DisplayName("Test de transición de estado")
+    void shouldBeAbleToAttendAfterSelfServiceScheduling() {
+        scheduler.schedule(appointment);
+
+        appointment.atender();
+
+        assertEquals(AppointmentStatus.ATENDIDA, appointment.getEstado());
     }
 }
