@@ -13,6 +13,13 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import com.mycompany.piedrazul.domain.state.ConfirmadaState;
+import com.mycompany.piedrazul.domain.state.ProgramadaState;
+import com.mycompany.piedrazul.domain.state.AppointmentState;
+import com.mycompany.piedrazul.domain.state.AtendidaState;
+import com.mycompany.piedrazul.domain.state.CanceladaState;
+import com.mycompany.piedrazul.domain.state.NoAsistidaState;
+import com.mycompany.piedrazul.domain.state.ReagendadaState;
 
 public class AppointmentRepositoryImpl implements IAppointmentRepository {
 
@@ -30,20 +37,10 @@ public class AppointmentRepositoryImpl implements IAppointmentRepository {
 
     @Override
     public Appointment save(Appointment appointment) {
-        System.out.println("=== GUARDANDO CITA EN BD ===");
-        System.out.println(
-                "CreadoPor ID: " + (appointment.getCreadoPor() != null ? appointment.getCreadoPor().getId() : "null"));
-        System.out.println(
-                "Paciente ID: " + (appointment.getPaciente() != null ? appointment.getPaciente().getId() : "null"));
-        System.out
-                .println("Médico ID: " + (appointment.getMedico() != null ? appointment.getMedico().getId() : "null"));
-        System.out.println("Fecha/Hora: " + appointment.getFechaHora());
-        System.out.println("Estado: " + (appointment.getEstado() != null ? appointment.getEstado().name() : "null"));
-        System.out.println("Observación: " + appointment.getObservacion());
 
         String sql = """
-                INSERT INTO Cita (usu_id, paciente_id, medico_id, fecha_hora_cita, cita_estado, observacion)
-                VALUES (?, ?, ?, ?, ?, ?)
+                    INSERT INTO Cita (usu_id, paciente_id, medico_id, fecha_hora_cita, cita_estado, observacion)
+                    VALUES (?, ?, ?, ?, ?, ?)
                 """;
 
         try (Connection conn = ConnectionFactory.getConnection();
@@ -56,30 +53,25 @@ public class AppointmentRepositoryImpl implements IAppointmentRepository {
             stmt.setString(5, appointment.getEstado().name());
             stmt.setString(6, appointment.getObservacion());
 
-            int affected = stmt.executeUpdate();
-            System.out.println("Filas afectadas: " + affected);
+            stmt.executeUpdate();
 
             ResultSet rs = stmt.getGeneratedKeys();
             if (rs.next()) {
                 appointment.setId(rs.getInt(1));
-                System.out.println("ID generado: " + appointment.getId());
-            } else {
-                System.out.println("ERROR: No se generó ID");
             }
 
             return appointment;
 
         } catch (SQLException e) {
-            System.err.println("Error SQL: " + e.getMessage());
-            System.err.println("SQL State: " + e.getSQLState());
-            e.printStackTrace();
             throw new RuntimeException("Error al guardar cita", e);
         }
     }
 
     @Override
     public Appointment findById(int id) {
-        String sql = "SELECT * FROM Cita WHERE id = ?";
+        System.out.println("🔍 findById() llamado con ID: " + id);
+
+        String sql = "SELECT * FROM Cita WHERE cita_id = ?";
 
         try (Connection conn = ConnectionFactory.getConnection();
                 PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -88,7 +80,10 @@ public class AppointmentRepositoryImpl implements IAppointmentRepository {
             ResultSet rs = stmt.executeQuery();
 
             if (rs.next()) {
+                System.out.println("✅ Cita encontrada en BD");
                 return map(rs);
+            } else {
+                System.out.println("❌ No se encontró cita con ID: " + id);
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -200,25 +195,45 @@ public class AppointmentRepositoryImpl implements IAppointmentRepository {
 
     @Override
     public boolean update(Appointment appointment) {
-        String sql = "UPDATE Cita SET date_time = ?, status = ?, notes = ? WHERE id = ?";
+        System.out.println("=== ACTUALIZANDO CITA EN BD ===");
+        System.out.println("ID: " + appointment.getId());
+        System.out.println("Fecha/Hora: " + appointment.getFechaHora());
+        System.out.println("Estado EN JAVA: '" + appointment.getEstado().name() + "'");
+        System.out.println("Observación: " + appointment.getObservacion());
+
+        // Verificar caracteres ocultos en el estado
+        String estadoStr = appointment.getEstado().name();
+        System.out.println("Longitud del estado: " + estadoStr.length());
+        for (int i = 0; i < estadoStr.length(); i++) {
+            char c = estadoStr.charAt(i);
+            System.out.println("  Char[" + i + "]: '" + c + "' - Código Unicode: " + (int) c);
+        }
+
+        String sql = """
+                    UPDATE Cita
+                    SET fecha_hora_cita = ?, cita_estado = ?, observacion = ?
+                    WHERE cita_id = ?
+                """;
+
         try (Connection conn = ConnectionFactory.getConnection();
                 PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setString(1, appointment.getFechaHora().format(formatter));
+
+            stmt.setTimestamp(1, Timestamp.valueOf(appointment.getFechaHora()));
             stmt.setString(2, appointment.getEstado().name());
             stmt.setString(3, appointment.getObservacion());
             stmt.setInt(4, appointment.getId());
-            int affected = stmt.executeUpdate();
-            System.out.println("Actualizando cita " + appointment.getId() + " a estado: " + appointment.getEstado());
-            return affected > 0;
+
+            return stmt.executeUpdate() > 0;
+
         } catch (SQLException e) {
-            e.printStackTrace();
-            return false;
+            throw new RuntimeException("Error al actualizar cita", e);
         }
     }
 
     @Override
     public boolean cancel(int id) {
-        String sql = "UPDATE Cita SET status = 'CANCELLED' WHERE id = ?";
+
+        String sql = "UPDATE Cita SET cita_estado = 'CANCELADA' WHERE cita_id = ?";
 
         try (Connection conn = ConnectionFactory.getConnection();
                 PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -227,8 +242,7 @@ public class AppointmentRepositoryImpl implements IAppointmentRepository {
             return stmt.executeUpdate() > 0;
 
         } catch (SQLException e) {
-            e.printStackTrace();
-            return false;
+            throw new RuntimeException("Error al cancelar cita", e);
         }
     }
 
@@ -263,8 +277,11 @@ public class AppointmentRepositoryImpl implements IAppointmentRepository {
         a.setCreadoPor(usuarioRepository.findById(usuarioId));
 
         a.setFechaHora(rs.getTimestamp("fecha_hora_cita").toLocalDateTime());
-        a.setEstado(AppointmentStatus.valueOf(rs.getString("cita_estado")));
         a.setObservacion(rs.getString("observacion"));
+
+        // reconstruir el State
+        AppointmentStatus status = AppointmentStatus.valueOf(rs.getString("cita_estado"));
+        a.setAppointmentState(convertToState(status));
 
         return a;
     }
@@ -341,4 +358,14 @@ public class AppointmentRepositoryImpl implements IAppointmentRepository {
         return false;
     }
 
+    private AppointmentState convertToState(AppointmentStatus status) {
+        return switch (status) {
+            case PROGRAMADA -> new ProgramadaState();
+            case CONFIRMADA -> new ConfirmadaState();
+            case CANCELADA -> new CanceladaState();
+            case ATENDIDA -> new AtendidaState();
+            case NO_ASISTIDA -> new NoAsistidaState();
+            case REAGENDADA -> new ReagendadaState();
+        };
+    }
 }

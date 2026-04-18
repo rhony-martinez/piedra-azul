@@ -10,11 +10,10 @@ import com.mycompany.piedrazul.domain.model.Appointment;
 import com.mycompany.piedrazul.domain.model.Medico;
 import com.mycompany.piedrazul.domain.model.Paciente;
 import com.mycompany.piedrazul.domain.model.Usuario;
-import com.mycompany.piedrazul.domain.repository.IAppointmentRepository;
 import com.mycompany.piedrazul.domain.repository.IUsuarioRepository;
 import com.mycompany.piedrazul.domain.service.AppointmentService;
 import com.mycompany.piedrazul.domain.service.NotificationService;
-import com.mycompany.piedrazul.domain.service.scheduler.ManualAppointmentScheduler;
+import com.mycompany.piedrazul.domain.service.scheduler.AppointmentScheduler;
 import java.time.LocalDateTime;
 
 /**
@@ -25,21 +24,19 @@ public class AppointmentFacade {
 
     private final AppointmentService appointmentService;
     private final NotificationService notificationService;
-    private final IAppointmentRepository appointmentRepository;
     private final IUsuarioRepository usuarioRepository;
-    private ManualAppointmentScheduler scheduler;
+    private final AppointmentScheduler scheduler;
 
-    public AppointmentFacade(AppointmentService appointmentService,
-            IAppointmentRepository appointmentRepository,
+    public AppointmentFacade(
+            AppointmentService appointmentService,
+            AppointmentScheduler scheduler,
             NotificationService notificationService,
             IUsuarioRepository usuarioRepository) {
 
         this.appointmentService = appointmentService;
-        this.appointmentRepository = appointmentRepository;
+        this.scheduler = scheduler;
         this.notificationService = notificationService;
         this.usuarioRepository = usuarioRepository;
-
-        this.scheduler = new ManualAppointmentScheduler(appointmentRepository);
     }
 
     public Appointment crearCitaManual(
@@ -50,11 +47,7 @@ public class AppointmentFacade {
             String observacion) {
 
         // 1. Builder
-        AppointmentDirector director = new AppointmentDirector();
-        ManualAppointmentBuilder builder = new ManualAppointmentBuilder();
-        director.setBuilder(builder);
-
-        Appointment cita = director.buildManualAppointment(
+        Appointment cita = construirCitaManual(
                 paciente,
                 medico,
                 fechaHora,
@@ -64,23 +57,55 @@ public class AppointmentFacade {
         // 2. Scheduler (Template Method)
         scheduler.schedule(cita);
 
-        // 3. Persistencia delegada a service y repository
+        // 3. Persistencia
         Appointment guardada = appointmentService.crearCita(cita);
 
-        Usuario usuarioPaciente = usuarioRepository
-                .findByPersonaId(cita.getPaciente().getId());
-
-        if (usuarioPaciente != null) {
-            String mensaje = construirMensaje(guardada);
-            notificationService.notifyUser(usuarioPaciente, mensaje);
-        }
+        // 4. Notificación
+        notificarPaciente(guardada);
 
         return guardada;
     }
 
+    // =========================
+    // MÉTODOS PRIVADOS
+    // =========================
+
+    private Appointment construirCitaManual(
+            Paciente paciente,
+            Medico medico,
+            LocalDateTime fechaHora,
+            Usuario usuarioCreador,
+            String observacion) {
+
+        AppointmentDirector director = new AppointmentDirector();
+        ManualAppointmentBuilder builder = new ManualAppointmentBuilder();
+
+        director.setBuilder(builder);
+
+        return director.buildManualAppointment(
+                paciente,
+                medico,
+                fechaHora,
+                usuarioCreador,
+                observacion);
+    }
+
+    private void notificarPaciente(Appointment cita) {
+
+        Usuario usuarioPaciente = usuarioRepository
+                .findByPersonaId(cita.getPaciente().getId());
+
+        if (usuarioPaciente == null)
+            return;
+
+        String mensaje = construirMensaje(cita);
+
+        notificationService.notifyUser(usuarioPaciente, mensaje);
+    }
+
     private String construirMensaje(Appointment cita) {
-        return "Cita confirmada:\n" +
-                " " + cita.getFechaHora().toLocalDate() +
-                "\n " + cita.getFechaHora().toLocalTime();
+        return "Cita confirmada:\n"
+                + " " + cita.getFechaHora().toLocalDate()
+                + "\n " + cita.getFechaHora().toLocalTime();
     }
 }

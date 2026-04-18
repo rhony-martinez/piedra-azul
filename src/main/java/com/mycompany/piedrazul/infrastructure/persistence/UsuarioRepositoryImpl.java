@@ -188,7 +188,7 @@ public class UsuarioRepositoryImpl implements IUsuarioRepository {
 
     @Override
     public void resetearIntentosFallidos(String username) {
-        String sql = "UPDATE usuarios SET intentos_fallidos = 0 WHERE username = ?";
+        String sql = "UPDATE Usuario SET intentos_fallidos = 0 WHERE username = ?";
 
         try (Connection conn = ConnectionFactory.getConnection();
                 PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -217,7 +217,7 @@ public class UsuarioRepositoryImpl implements IUsuarioRepository {
 
     @Override
     public Usuario findById(int id) {
-        String sql = "SELECT * FROM usuarios WHERE id = ?";
+        String sql = "SELECT u.usu_id, u.username, u.usu_password, u.usu_estado, r.rol_nombre FROM Usuario u JOIN UsuarioRol ur ON u.usu_id = ur.usu_id JOIN Rol r ON ur.rol_id = r.rol_id WHERE u.usu_id = ?";
 
         try (Connection conn = ConnectionFactory.getConnection();
                 PreparedStatement stmt = conn.prepareStatement(sql)) {

@@ -39,10 +39,10 @@ public class ManualAppointmentScheduler extends AppointmentScheduler {
         boolean ocupado = repository.existsByMedicoAndFechaHora(
                 appointment.getMedico().getId(),
                 appointment.getFechaHora());
-        
+
         boolean agendado = repository.existsByPacienteAndFecha(
-            appointment.getPaciente().getId(),
-            appointment.getFechaHora());
+                appointment.getPaciente().getId(),
+                appointment.getFechaHora());
 
         if (ocupado) {
             throw new IllegalStateException("El médico ya tiene una cita en ese horario");
@@ -60,6 +60,6 @@ public class ManualAppointmentScheduler extends AppointmentScheduler {
 
     @Override
     protected void confirmAppointment(Appointment appointment) {
-        appointment.setEstado(AppointmentStatus.PROGRAMADA);
+        // La cita ya está en PROGRAMADA por defecto
     }
 }
