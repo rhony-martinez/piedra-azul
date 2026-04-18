@@ -1,13 +1,11 @@
 package com.mycompany.piedrazul.domain.service;
 
-import com.mycompany.piedrazul.domain.model.AppointmentStatus;
-import com.mycompany.piedrazul.domain.builder.AppointmentDirector;
-import com.mycompany.piedrazul.domain.builder.ManualAppointmentBuilder;
 import com.mycompany.piedrazul.domain.model.Appointment;
-import com.mycompany.piedrazul.domain.model.Medico;
-import com.mycompany.piedrazul.domain.model.Paciente;
 import com.mycompany.piedrazul.domain.model.Usuario;
 import com.mycompany.piedrazul.domain.repository.IAppointmentRepository;
+
+import java.time.LocalDate;
+import java.util.ArrayList;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -20,21 +18,42 @@ public class AppointmentService {
         this.appointmentRepository = appointmentRepository;
     }
 
+    // =========================
+    // CREACIÓN BÁSICA
+    // =========================
     public Appointment crearCita(Appointment appointment) {
+        validarCita(appointment);
+        return appointmentRepository.save(appointment);
+    }
+
+    private void validarCita(Appointment appointment) {
+
         if (appointment == null) {
             throw new IllegalArgumentException("La cita no puede ser nula");
         }
+
         if (appointment.getPaciente() == null || appointment.getPaciente().getId() <= 0) {
             throw new IllegalArgumentException("Paciente inválido");
         }
+
         if (appointment.getMedico() == null || appointment.getMedico().getId() <= 0) {
             throw new IllegalArgumentException("Profesional inválido");
         }
+
         if (appointment.getFechaHora() == null) {
             throw new IllegalArgumentException("Fecha y hora requeridas");
         }
 
-        return appointmentRepository.save(appointment);
+        if (appointment.getFechaHora().isBefore(LocalDateTime.now())) {
+            throw new IllegalArgumentException("No se puede crear una cita en el pasado");
+        }
+    }
+
+    // =========================
+    // CONSULTAS
+    // =========================
+    public Appointment obtenerCitaPorId(int id) {
+        return appointmentRepository.findById(id);
     }
 
     public List<Appointment> obtenerCitasPaciente(Usuario paciente) {
@@ -53,82 +72,73 @@ public class AppointmentService {
         return appointmentRepository.findHistory(usuario);
     }
 
-    /*
-     * public boolean confirmarCita(int id) {
-     * Appointment cita = appointmentRepository.findById(id);
-     * if (cita != null) {
-     * cita.setStatus(AppointmentStatus.CONFIRMED);
-     * return appointmentRepository.update(cita);
-     * }
-     * return false;
-     * }
-     */
+    public List<Appointment> obtenerTodasLasCitas() {
+        return appointmentRepository.findAll();
+    }
+
+    // =========================
+    // ACTUALIZACIÓN
+    // =========================
+    public boolean actualizarCita(Appointment appointment) {
+
+        if (appointment == null || appointment.getId() <= 0) {
+            throw new IllegalArgumentException("Cita inválida");
+        }
+
+        return appointmentRepository.update(appointment);
+    }
 
     public boolean cancelarCita(int id) {
-        return appointmentRepository.cancel(id);
+
+        Appointment cita = appointmentRepository.findById(id);
+
+        if (cita == null) {
+            return false;
+        }
+
+        cita.cancelar();
+
+        return appointmentRepository.update(cita);
     }
 
-    /*
-     * public boolean reprogramarCita(Appointment nuevaCita) {
-     * if (nuevaCita.getOriginalAppointment() == null) {
-     * throw new IllegalArgumentException("Debe especificar la cita original");
-     * }
-     * return appointmentRepository.save(nuevaCita) != null;
-     * }
-     */
+    // =========================
+    // FILTROS
+    // =========================
+    public List<Appointment> obtenerCitasPorMedicoYFecha(int medicoId, LocalDate fecha) {
 
-    public Appointment crearCitaManual(
-            Paciente paciente,
-            Medico medico,
-            LocalDateTime fechaHora,
-            Usuario usuarioCreador,
-            String observacion) {
+        List<Appointment> todas = appointmentRepository.findAll();
+        List<Appointment> filtradas = new ArrayList<>();
 
-        fechaHora = normalizarHora(fechaHora);
+        LocalDateTime inicioDia = fecha.atStartOfDay();
+        LocalDateTime finDia = fecha.atTime(23, 59, 59);
 
-        // 1. Validación solapamiento paciente
-        if (appointmentRepository.existsByPacienteAndFecha(paciente.getId(), fechaHora)) {
-            throw new IllegalArgumentException(
-                    "El paciente ya tiene agendada una cita en este horario");
-        }
+        for (Appointment cita : todas) {
 
-        // 2. Validación simultaneidad (MÉDICO OCUPADO)
-        if (appointmentRepository.existsByMedicoAndFecha(medico.getId(), fechaHora)) {
-            throw new IllegalArgumentException(
-                    "Horario no disponible para agendamiento");
-        }
+            if (cita.getFechaHora() == null)
+                continue;
 
-        AppointmentDirector director = new AppointmentDirector();
-        ManualAppointmentBuilder builder = new ManualAppointmentBuilder();
+            boolean coincideMedico = (medicoId == 0) ||
+                    (cita.getMedico() != null && cita.getMedico().getId() == medicoId);
 
-        director.setBuilder(builder);
+            boolean coincideFecha = !cita.getFechaHora().isBefore(inicioDia) &&
+                    !cita.getFechaHora().isAfter(finDia);
 
-        Appointment cita = director.buildManualAppointment(
-                paciente,
-                medico,
-                fechaHora,
-                usuarioCreador,
-                observacion);
-
-        try {
-            return appointmentRepository.save(cita);
-        } catch (Exception e) {
-            if (e.getMessage().contains("uq_med_fecha_hora")) {
-                throw new IllegalArgumentException("Horario no disponible para agendamiento");
+            if (coincideMedico && coincideFecha) {
+                filtradas.add(cita);
             }
-            throw e;
         }
+
+        return filtradas;
     }
 
-    private LocalDateTime normalizarHora(LocalDateTime fecha) {
-        return fecha.withMinute(0).withSecond(0).withNano(0);
+    // =========================
+    // DISPONIBILIDAD
+    // =========================
+    public boolean verificarDisponibilidadMedico(int medicoId, LocalDateTime fechaHora) {
+
+        LocalDateTime normalizada = fechaHora.withSecond(0).withNano(0);
+
+        return !appointmentRepository.existsByMedicoAndFechaHora(medicoId, normalizada);
     }
 
-    public List<Appointment> listar(String medico, String fecha) {
-        return appointmentRepository.listar(medico, fecha);
-    }
-
-    public List<Appointment> listarPorMedicoYFecha(String medico, String fecha) {
-        return appointmentRepository.listarPorMedicoYFecha(medico, fecha);
-    }
 }

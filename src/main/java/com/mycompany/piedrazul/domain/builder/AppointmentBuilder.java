@@ -1,7 +1,6 @@
 package com.mycompany.piedrazul.domain.builder;
 
 import com.mycompany.piedrazul.domain.model.Appointment;
-import com.mycompany.piedrazul.domain.model.AppointmentStatus;
 import com.mycompany.piedrazul.domain.model.Medico;
 import com.mycompany.piedrazul.domain.model.Paciente;
 import com.mycompany.piedrazul.domain.model.Usuario;
@@ -14,7 +13,6 @@ public abstract class AppointmentBuilder {
     public void crearNueva() {
         appointment = new Appointment();
         appointment.setCreadoEn(LocalDateTime.now());
-        appointment.setEstado(AppointmentStatus.PROGRAMADA);
     }
 
     public Appointment getResult() {

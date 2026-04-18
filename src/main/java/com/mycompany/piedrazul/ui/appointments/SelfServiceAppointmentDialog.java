@@ -1,212 +1,337 @@
-// package com.mycompany.piedrazul.ui.appointments;
+package com.mycompany.piedrazul.ui.appointments;
 
-// import com.mycompany.piedrazul.domain.builder.AppointmentDirector;
-// import com.mycompany.piedrazul.domain.builder.SelfServiceAppointmentBuilder;
-// import com.mycompany.piedrazul.domain.model.Appointment;
-// import com.mycompany.piedrazul.domain.model.Rol;
-// import com.mycompany.piedrazul.domain.model.Usuario;
-// import com.mycompany.piedrazul.domain.service.UsuarioService;
-// import com.mycompany.piedrazul.domain.service.AppointmentService;
-// import com.mycompany.piedrazul.infrastructure.persistence.AppointmentRepositoryImpl;
-// import com.mycompany.piedrazul.infrastructure.persistence.UsuarioRepositoryImpl;
-// import com.mycompany.piedrazul.main.Piedrazul;
-// import com.toedter.calendar.JDateChooser;
-// import javax.swing.*;
-// import java.awt.*;
-// import java.time.LocalDateTime;
-// import java.time.ZoneId;
-// import java.util.Date;
-// import java.util.List;
+import com.mycompany.piedrazul.domain.model.Appointment;
+import com.mycompany.piedrazul.domain.model.Medico;
+import com.mycompany.piedrazul.domain.model.Paciente;
+import com.mycompany.piedrazul.domain.model.Usuario;
+import com.mycompany.piedrazul.domain.repository.IAppointmentRepository;
+import com.mycompany.piedrazul.domain.repository.IMedicoRepository;
+import com.mycompany.piedrazul.domain.repository.INotificationRepository;
+import com.mycompany.piedrazul.domain.repository.IPacienteRepository;
+import com.mycompany.piedrazul.domain.repository.IPersonaRepository;
+import com.mycompany.piedrazul.domain.repository.IUsuarioRepository;
+import com.mycompany.piedrazul.domain.service.AppointmentService;
+import com.mycompany.piedrazul.domain.service.NotificationService;
+import com.mycompany.piedrazul.domain.service.facade.AppointmentFacade;
+import com.mycompany.piedrazul.domain.service.scheduler.AppointmentScheduler;
+import com.mycompany.piedrazul.domain.service.scheduler.ManualAppointmentScheduler;
+import com.mycompany.piedrazul.domain.service.scheduler.SelfServiceAppointmentScheduler;
+import com.mycompany.piedrazul.infrastructure.persistence.AppointmentRepositoryImpl;
+import com.mycompany.piedrazul.infrastructure.persistence.MedicoRepositoryImpl;
+import com.mycompany.piedrazul.infrastructure.persistence.NotificationRepositoryImpl;
+import com.mycompany.piedrazul.infrastructure.persistence.PacienteRepositoryImpl;
+import com.mycompany.piedrazul.infrastructure.persistence.PersonaRepositoryImpl;
+import com.mycompany.piedrazul.infrastructure.persistence.UsuarioRepositoryImpl;
+import com.toedter.calendar.JDateChooser;
+import javax.swing.*;
+import java.awt.*;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.Date;
+import java.util.List;
 
-// public class SelfServiceAppointmentDialog extends JDialog {
-    
-//     private Usuario pacienteActual;
-//     private AppointmentService appointmentService;
-//     private UsuarioService usuarioService;
-    
-//     private JComboBox<Usuario> cmbMedicos;
-//     private JDateChooser dateChooser;
-//     private JComboBox<String> cmbHora;
-//     private JComboBox<String> cmbTipo;
-//     private JTextField txtMotivo;
-//     private JButton btnAgendar;
-//     private JButton btnCancelar;
+public class SelfServiceAppointmentDialog extends JFrame {
 
-//     public SelfServiceAppointmentDialog(JFrame parent, Usuario pacienteActual) {
-//         super(parent, "Agendar Cita - Autoservicio", true);
-//         this.pacienteActual = pacienteActual;
-//         this.appointmentService = new AppointmentService(new AppointmentRepositoryImpl(new UsuarioRepositoryImpl()));
-//         this.usuarioService = Piedrazul.getUsuarioService(); 
-//         initComponents();
-//         cargarMedicos();
-//         setLocationRelativeTo(parent);
-//     }
+    private Usuario usuarioActual;
+    private AppointmentService appointmentService;
+    private IPacienteRepository pacienteRepository;
+    private IMedicoRepository medicoRepository;
+    private IPersonaRepository personaRepository;
+    private AppointmentFacade appointmentFacade;
+    private NotificationService notificationService;
+    private INotificationRepository notificacionRepository;
 
-//     private void initComponents() {
-//         setSize(450, 550);
-//         setLayout(new BorderLayout());
+    private JFrame parentFrame;
 
-//         JPanel mainPanel = new JPanel();
-//         mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
-//         mainPanel.setBorder(BorderFactory.createEmptyBorder(20, 30, 20, 30));
-//         mainPanel.setBackground(Color.WHITE);
+    private JComboBox<Medico> cmbMedicos;
+    private JDateChooser dateChooser;
+    private JComboBox<String> cmbHora;
+    private JTextField txtMotivo;
+    private JButton btnAgendar;
+    private JButton btnCancelar;
 
-//         JLabel lblTitulo = new JLabel("AGENDAR CITA - AUTOSERVICIO", SwingConstants.CENTER);
-//         lblTitulo.setFont(new Font("Segoe UI", Font.BOLD, 18));
-//         lblTitulo.setForeground(new Color(255, 152, 0));
-//         lblTitulo.setAlignmentX(Component.CENTER_ALIGNMENT);
-//         mainPanel.add(lblTitulo);
-//         mainPanel.add(Box.createVerticalStrut(20));
+    public SelfServiceAppointmentDialog(JFrame parentFrame, Usuario usuarioActual) {
+        this.usuarioActual = usuarioActual;
+        this.parentFrame = parentFrame;
 
-//         JPanel infoPaciente = new JPanel(new FlowLayout(FlowLayout.LEFT));
-//         infoPaciente.setBackground(Color.WHITE);
-//         infoPaciente.add(new JLabel("Paciente: " + pacienteActual.getNombreCompleto()));
-//         mainPanel.add(infoPaciente);
-//         mainPanel.add(Box.createVerticalStrut(15));
+        // Inicializar repositorios y servicios
+        IUsuarioRepository usuarioRepo = new UsuarioRepositoryImpl();
+        this.pacienteRepository = new PacienteRepositoryImpl();
+        this.medicoRepository = new MedicoRepositoryImpl();
+        this.personaRepository = new PersonaRepositoryImpl();
+        this.notificacionRepository = new NotificationRepositoryImpl();
 
-//         mainPanel.add(crearLabel("Seleccione médico:"));
-//         cmbMedicos = new JComboBox<>();
-//         cmbMedicos.setMaximumSize(new Dimension(Integer.MAX_VALUE, 35));
-//         mainPanel.add(cmbMedicos);
-//         mainPanel.add(Box.createVerticalStrut(15));
+        IAppointmentRepository appointmentRepo = new AppointmentRepositoryImpl(
+                usuarioRepo, pacienteRepository, medicoRepository);
 
-//         mainPanel.add(crearLabel("Fecha:"));
-//         dateChooser = new JDateChooser();
-//         dateChooser.setDateFormatString("dd/MM/yyyy");
-//         dateChooser.setMaximumSize(new Dimension(Integer.MAX_VALUE, 35));
-//         dateChooser.setMinSelectableDate(new Date());
-//         mainPanel.add(dateChooser);
-//         mainPanel.add(Box.createVerticalStrut(15));
+        this.appointmentService = new AppointmentService(appointmentRepo);
+        this.notificationService = new NotificationService(notificacionRepository);
 
-//         mainPanel.add(crearLabel("Hora:"));
-//         cmbHora = new JComboBox<>(generarHoras());
-//         cmbHora.setMaximumSize(new Dimension(Integer.MAX_VALUE, 35));
-//         mainPanel.add(cmbHora);
-//         mainPanel.add(Box.createVerticalStrut(15));
+        AppointmentScheduler manualScheduler = new ManualAppointmentScheduler(appointmentRepo);
+        AppointmentScheduler selfServiceScheduler = new SelfServiceAppointmentScheduler(appointmentRepo);
 
-//         mainPanel.add(crearLabel("Tipo de cita:"));
-//         cmbTipo = new JComboBox<>(new String[]{"CONSULTA", "CONTROL"});
-//         cmbTipo.setMaximumSize(new Dimension(Integer.MAX_VALUE, 35));
-//         mainPanel.add(cmbTipo);
-//         mainPanel.add(Box.createVerticalStrut(15));
+        this.appointmentFacade = new AppointmentFacade(
+                appointmentService,
+                appointmentRepo,
+                notificationService,
+                usuarioRepo,
+                manualScheduler,
+                selfServiceScheduler);
 
-//         mainPanel.add(crearLabel("Motivo (opcional):"));
-//         txtMotivo = new JTextField();
-//         txtMotivo.setMaximumSize(new Dimension(Integer.MAX_VALUE, 35));
-//         mainPanel.add(txtMotivo);
-//         mainPanel.add(Box.createVerticalStrut(20));
+        initComponents();
+        cargarMedicos();
 
-//         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 0));
-//         buttonPanel.setBackground(Color.WHITE);
+        setLocationRelativeTo(null);
+    }
 
-//         btnAgendar = new JButton("Agendar Cita");
-//         btnCancelar = new JButton("Cancelar");
+    private void initComponents() {
+        setTitle("PIEDRAZUL - Agendar Cita");
+        setExtendedState(JFrame.MAXIMIZED_BOTH);
+        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        setLayout(new BorderLayout());
+        getContentPane().setBackground(new Color(220, 220, 220));
 
-//         btnAgendar.setBackground(new Color(255, 152, 0));
-//         btnCancelar.setBackground(new Color(244, 67, 54));
-//         btnAgendar.setForeground(Color.WHITE);
-//         btnCancelar.setForeground(Color.WHITE);
-//         btnAgendar.setFocusPainted(false);
-//         btnCancelar.setFocusPainted(false);
-//         btnAgendar.setPreferredSize(new Dimension(150, 40));
-//         btnCancelar.setPreferredSize(new Dimension(150, 40));
+        JPanel mainPanel = new JPanel(new BorderLayout());
+        mainPanel.setBackground(new Color(220, 220, 220));
 
-//         btnAgendar.addActionListener(e -> agendarCita());
-//         btnCancelar.addActionListener(e -> dispose());
+        // ==============================
+        // Barra superior turquesa con logo y botón volver
+        // ==============================
+        JPanel topBar = new JPanel(new BorderLayout());
+        topBar.setBackground(new Color(40, 170, 200));
+        topBar.setPreferredSize(new Dimension(800, 80));
+        topBar.setBorder(BorderFactory.createEmptyBorder(0, 40, 0, 40));
 
-//         buttonPanel.add(btnAgendar);
-//         buttonPanel.add(btnCancelar);
-//         mainPanel.add(buttonPanel);
+        JLabel lblTitulo = new JLabel("PIEDRAZUL");
+        lblTitulo.setFont(new Font("Segoe UI", Font.BOLD | Font.ITALIC, 32));
+        lblTitulo.setForeground(Color.WHITE);
 
-//         add(new JScrollPane(mainPanel), BorderLayout.CENTER);
-//     }
+        // Botón volver
+        JButton btnVolver = new JButton("← Volver");
+        btnVolver.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        btnVolver.setBackground(new Color(40, 170, 200));
+        btnVolver.setForeground(Color.WHITE);
+        btnVolver.setBorderPainted(false);
+        btnVolver.setFocusPainted(false);
+        btnVolver.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btnVolver.setPreferredSize(new Dimension(100, 40));
+        btnVolver.addActionListener(e -> {
+            parentFrame.setVisible(true);
+            dispose();
+        });
 
-//     private JLabel crearLabel(String texto) {
-//         JLabel label = new JLabel(texto);
-//         label.setFont(new Font("Segoe UI", Font.BOLD, 14));
-//         label.setForeground(new Color(255, 152, 0));
-//         label.setAlignmentX(Component.LEFT_ALIGNMENT);
-//         return label;
-//     }
+        topBar.add(lblTitulo, BorderLayout.WEST);
+        topBar.add(btnVolver, BorderLayout.EAST);
 
-//     private String[] generarHoras() {
-//         String[] horas = new String[11];
-//         for (int i = 0; i < 11; i++) {
-//             int hora = 8 + i;
-//             horas[i] = String.format("%02d:00", hora);
-//         }
-//         return horas;
-//     }
+        // ==============================
+        // Panel central con scroll
+        // ==============================
+        JPanel centerPanel = new JPanel();
+        centerPanel.setLayout(new BoxLayout(centerPanel, BoxLayout.Y_AXIS));
+        centerPanel.setBackground(new Color(220, 220, 220));
+        centerPanel.setBorder(BorderFactory.createEmptyBorder(30, 150, 30, 150));
 
-//     private void cargarMedicos() {
-//         List<Usuario> medicos = usuarioService.obtenerTodosLosMedicos();
+        // Título
+        JLabel lblSeccionTitulo = new JLabel("AGENDAR NUEVA CITA");
+        lblSeccionTitulo.setFont(new Font("Segoe UI", Font.BOLD, 32));
+        lblSeccionTitulo.setForeground(new Color(70, 170, 200));
+        lblSeccionTitulo.setAlignmentX(Component.CENTER_ALIGNMENT);
+        centerPanel.add(lblSeccionTitulo);
+        centerPanel.add(Box.createVerticalStrut(5));
 
-//         if (medicos.isEmpty()) {
-//             JOptionPane.showMessageDialog(this, 
-//                 "No hay médicos disponibles en este momento.\nNo puede agendar citas.", 
-//                 "Sin médicos", 
-//                 JOptionPane.ERROR_MESSAGE);
-//             btnAgendar.setEnabled(false);
-//             return;
-//         }
+        JLabel lblSubtitulo = new JLabel("Complete los siguientes datos para agendar una cita");
+        lblSubtitulo.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        lblSubtitulo.setForeground(new Color(100, 100, 100));
+        lblSubtitulo.setAlignmentX(Component.CENTER_ALIGNMENT);
+        centerPanel.add(lblSubtitulo);
+        centerPanel.add(Box.createVerticalStrut(40));
 
-//         for (Usuario m : medicos) {
-//             cmbMedicos.addItem(m);
-//         }
-//         btnAgendar.setEnabled(true);
-//     }
+        // ===================== FORMULARIO =====================
 
-//     private void agendarCita() {
-//         try {
-//             if (cmbMedicos.getSelectedItem() == null) {
-//                 JOptionPane.showMessageDialog(this, 
-//                     "Seleccione un médico", 
-//                     "Error", 
-//                     JOptionPane.ERROR_MESSAGE);
-//                 return;
-//             }
-//             if (dateChooser.getDate() == null) {
-//                 JOptionPane.showMessageDialog(this, 
-//                     "Seleccione una fecha", 
-//                     "Error", 
-//                     JOptionPane.ERROR_MESSAGE);
-//                 return;
-//             }
+        JPanel panelCita = new JPanel();
+        panelCita.setLayout(new BoxLayout(panelCita, BoxLayout.Y_AXIS));
+        panelCita.setBackground(Color.WHITE);
+        panelCita.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
-//             Date selectedDate = dateChooser.getDate();
-//             String hora = (String) cmbHora.getSelectedItem();
-//             LocalDateTime dateTime = LocalDateTime.ofInstant(
-//                 selectedDate.toInstant(), 
-//                 ZoneId.systemDefault()
-//             ).withHour(Integer.parseInt(hora.split(":")[0])).withMinute(0);
+        // Médico
+        panelCita.add(crearLabel("Médico:"));
+        cmbMedicos = new JComboBox<>();
+        cmbMedicos.setMaximumSize(new Dimension(Integer.MAX_VALUE, 40));
+        panelCita.add(cmbMedicos);
 
-//             AppointmentDirector director = new AppointmentDirector();
-//             SelfServiceAppointmentBuilder builder = new SelfServiceAppointmentBuilder();
-//             director.setAppointmentBuilder(builder);
+        panelCita.add(Box.createVerticalStrut(15));
 
-//             Appointment cita = director.buildSelfServiceAppointment(
-//                 pacienteActual,
-//                 (Usuario) cmbMedicos.getSelectedItem(),
-//                 dateTime,
-//                 (String) cmbTipo.getSelectedItem(),
-//                 txtMotivo.getText().trim(),
-//                 pacienteActual
-//             );
+        // Fecha
+        panelCita.add(crearLabel("Fecha:"));
+        dateChooser = new JDateChooser();
+        dateChooser.setDateFormatString("dd/MM/yyyy");
+        dateChooser.setMinSelectableDate(new Date());
+        dateChooser.setMaximumSize(new Dimension(Integer.MAX_VALUE, 40));
+        panelCita.add(dateChooser);
 
-//             Appointment citaGuardada = appointmentService.crearCita(cita);
+        panelCita.add(Box.createVerticalStrut(15));
 
-//             JOptionPane.showMessageDialog(this, 
-//                 "Cita agendada exitosamente.\nNúmero de cita: " + citaGuardada.getId(),
-//                 "Éxito", 
-//                 JOptionPane.INFORMATION_MESSAGE);
-            
-//             dispose();
+        // Hora
+        panelCita.add(crearLabel("Hora:"));
+        cmbHora = new JComboBox<>(generarHoras());
+        cmbHora.setMaximumSize(new Dimension(Integer.MAX_VALUE, 40));
+        panelCita.add(cmbHora);
 
-//         } catch (Exception ex) {
-//             JOptionPane.showMessageDialog(this, 
-//                 "Error al agendar: " + ex.getMessage(),
-//                 "Error", 
-//                 JOptionPane.ERROR_MESSAGE);
-//         }
-//     }
-// }
+        panelCita.add(Box.createVerticalStrut(15));
+
+        panelCita.add(Box.createVerticalStrut(15));
+
+        // Motivo
+        panelCita.add(crearLabel("Motivo:"));
+        txtMotivo = new JTextField();
+        txtMotivo.setMaximumSize(new Dimension(Integer.MAX_VALUE, 40));
+        panelCita.add(txtMotivo);
+
+        panelCita.add(Box.createVerticalStrut(20));
+
+        // BOTONES
+        JPanel buttonPanel = new JPanel(new FlowLayout());
+        buttonPanel.setBackground(Color.WHITE);
+
+        btnAgendar = new JButton("Agendar");
+        btnCancelar = new JButton("Cancelar");
+
+        btnAgendar.addActionListener(e -> agendarCita());
+        btnCancelar.addActionListener(e -> {
+            parentFrame.setVisible(true);
+            dispose();
+        });
+
+        buttonPanel.add(btnAgendar);
+        buttonPanel.add(btnCancelar);
+
+        panelCita.add(buttonPanel);
+
+        // agregar al center
+        centerPanel.add(panelCita);
+
+        // SCROLL
+        JScrollPane scrollPane = new JScrollPane(centerPanel);
+        scrollPane.setBorder(null);
+
+        mainPanel.add(topBar, BorderLayout.NORTH);
+        mainPanel.add(scrollPane, BorderLayout.CENTER);
+
+        add(mainPanel);
+    }
+
+    private JLabel crearLabel(String texto) {
+        JLabel label = new JLabel(texto);
+        label.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        label.setForeground(new Color(255, 152, 0));
+        label.setAlignmentX(Component.LEFT_ALIGNMENT);
+        return label;
+    }
+
+    private String[] generarHoras() {
+        String[] horas = new String[11];
+        for (int i = 0; i < 11; i++) {
+            int hora = 8 + i;
+            horas[i] = String.format("%02d:00", hora);
+        }
+        return horas;
+    }
+
+    private void cargarMedicos() {
+        cmbMedicos.removeAllItems();
+
+        List<Medico> medicos = medicoRepository.findAllActivos();
+
+        if (medicos.isEmpty()) {
+            JOptionPane.showMessageDialog(this,
+                    "No hay médicos disponibles en este momento.\nNo puede agendar citas.",
+                    "Sin médicos",
+                    JOptionPane.ERROR_MESSAGE);
+
+            btnAgendar.setEnabled(false);
+            return;
+        }
+
+        for (Medico m : medicos) {
+            cmbMedicos.addItem(m);
+        }
+
+        System.out.println("Médicos cargados: " + medicos.size());
+
+        btnAgendar.setEnabled(true);
+    }
+
+    private void agendarCita() {
+        try {
+            if (cmbMedicos.getSelectedItem() == null) {
+                JOptionPane.showMessageDialog(this,
+                        "Seleccione un médico",
+                        "Error",
+                        JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            if (dateChooser.getDate() == null) {
+                JOptionPane.showMessageDialog(this,
+                        "Seleccione una fecha",
+                        "Error",
+                        JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            Date selectedDate = dateChooser.getDate();
+            String hora = (String) cmbHora.getSelectedItem();
+
+            LocalDateTime dateTime = LocalDateTime.ofInstant(
+                    selectedDate.toInstant(),
+                    ZoneId.systemDefault()).withHour(Integer.parseInt(hora.split(":")[0]))
+                    .withMinute(0)
+                    .withSecond(0)
+                    .withNano(0);
+
+            // Convertir Usuario → Paciente
+            Paciente paciente = pacienteRepository.findById(
+                    usuarioActual.getPersonaId());
+
+            Medico medico = (Medico) cmbMedicos.getSelectedItem();
+
+            if (paciente == null) {
+                throw new IllegalStateException("El usuario no está registrado como paciente");
+            }
+
+            if (medico == null) {
+                throw new IllegalStateException("No se encontró el médico");
+            }
+
+            // Llamada correcta
+            Appointment citaGuardada = appointmentFacade.crearCitaAutonoma(
+                    paciente,
+                    medico,
+                    dateTime,
+                    usuarioActual,
+                    txtMotivo.getText().trim());
+
+            JOptionPane.showMessageDialog(this,
+                    "Cita agendada exitosamente el día " + dateTime.toLocalDate() +
+                            " a la hora " + dateTime.toLocalTime() +
+                            " con el médico " + cmbMedicos.getSelectedItem(),
+                    "Éxito",
+                    JOptionPane.INFORMATION_MESSAGE);
+
+            dispose();
+
+        } catch (IllegalStateException ex) {
+            // errores de negocio (Template Method)
+            JOptionPane.showMessageDialog(this,
+                    ex.getMessage(),
+                    "Error",
+                    JOptionPane.WARNING_MESSAGE);
+
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this,
+                    "Error inesperado: " + ex.getMessage(),
+                    "Error",
+                    JOptionPane.ERROR_MESSAGE);
+        }
+    }
+}

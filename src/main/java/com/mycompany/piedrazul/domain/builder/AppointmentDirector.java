@@ -1,7 +1,6 @@
 package com.mycompany.piedrazul.domain.builder;
 
 import com.mycompany.piedrazul.domain.model.Appointment;
-import com.mycompany.piedrazul.domain.model.AppointmentStatus;
 import com.mycompany.piedrazul.domain.model.Medico;
 import com.mycompany.piedrazul.domain.model.Paciente;
 import com.mycompany.piedrazul.domain.model.Usuario;
@@ -34,41 +33,50 @@ public class AppointmentDirector {
     }
 
     // Construir cita por autoservicio (paciente)
-    /*public Appointment buildSelfServiceAppointment(Usuario patient, Usuario professional,
-            LocalDateTime dateTime, String type,
-            String reason, Usuario createdBy) {
-        appointmentBuilder.crearNuevaAppointment();
-        appointmentBuilder.buildPatientData(patient);
-        appointmentBuilder.buildProfessionalData(professional);
-        appointmentBuilder.buildDateTime(dateTime);
-        appointmentBuilder.buildAppointmentType(type);
-        appointmentBuilder.buildReason(reason);
-        appointmentBuilder.buildCreatedBy(createdBy);
+    public Appointment buildSelfServiceAppointment(
+            Paciente paciente,
+            Medico medico,
+            LocalDateTime fechaHora,
+            Usuario usuario,
+            String observacion) {
 
-        return appointmentBuilder.getAppointment();
-    }*/
+        builder.crearNueva();
+        builder.buildPaciente(paciente);
+        builder.buildMedico(medico);
+        builder.buildFechaHora(fechaHora);
+        builder.buildCreadoPor(usuario);
+        builder.buildObservacion(observacion);
+
+        return builder.getResult();
+    }
 
     // Construir cita reprogramada
-    /*public Appointment buildRescheduledAppointment(Appointment originalAppointment,
-            Usuario professional,
-            LocalDateTime newDateTime,
-            Usuario rescheduledBy) {
-        // Nota: El builder ya debe estar configurado con la cita original
-        appointmentBuilder.crearNuevaAppointment();
-        appointmentBuilder.buildProfessionalData(professional);
-        appointmentBuilder.buildDateTime(newDateTime);
-        appointmentBuilder.buildCreatedBy(rescheduledBy);
-
-        return appointmentBuilder.getAppointment();
-    }*/
+    /*
+     * public Appointment buildRescheduledAppointment(Appointment
+     * originalAppointment,
+     * Usuario professional,
+     * LocalDateTime newDateTime,
+     * Usuario rescheduledBy) {
+     * // Nota: El builder ya debe estar configurado con la cita original
+     * appointmentBuilder.crearNuevaAppointment();
+     * appointmentBuilder.buildProfessionalData(professional);
+     * appointmentBuilder.buildDateTime(newDateTime);
+     * appointmentBuilder.buildCreatedBy(rescheduledBy);
+     * 
+     * return appointmentBuilder.getAppointment();
+     * }
+     */
 
     // Construir cita reprogramada (manteniendo el mismo profesional)
-    /*public Appointment buildRescheduledAppointmentSameProfessional(Appointment originalAppointment,
-            LocalDateTime newDateTime,
-            Usuario rescheduledBy) {
-        return buildRescheduledAppointment(originalAppointment,
-                originalAppointment.getMedico(),
-                newDateTime,
-                rescheduledBy);
-    }*/
+    /*
+     * public Appointment buildRescheduledAppointmentSameProfessional(Appointment
+     * originalAppointment,
+     * LocalDateTime newDateTime,
+     * Usuario rescheduledBy) {
+     * return buildRescheduledAppointment(originalAppointment,
+     * originalAppointment.getMedico(),
+     * newDateTime,
+     * rescheduledBy);
+     * }
+     */
 }

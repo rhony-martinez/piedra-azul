@@ -1,9 +1,10 @@
 package com.mycompany.piedrazul.domain.model;
 
 public enum AppointmentStatus {
-    PROGRAMADA,      // Agendada
-    CONFIRMADA,     // El paciente confirma la cita
-    CANCELADA,      // Confirmada
-    ATENDIDA,    // En curso
-    NO_ASISTIDA,      // Completada
+    PROGRAMADA,
+    CONFIRMADA,     
+    CANCELADA,
+    ATENDIDA,
+    NO_ASISTIDA,
+    REAGENDADA       
 }

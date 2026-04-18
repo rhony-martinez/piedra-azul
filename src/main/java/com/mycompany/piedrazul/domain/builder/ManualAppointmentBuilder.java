@@ -1,5 +1,5 @@
 package com.mycompany.piedrazul.domain.builder;
-import com.mycompany.piedrazul.domain.model.AppointmentStatus;
+
 import com.mycompany.piedrazul.domain.model.Medico;
 import com.mycompany.piedrazul.domain.model.Paciente;
 import com.mycompany.piedrazul.domain.model.Usuario;
@@ -28,7 +28,10 @@ public class ManualAppointmentBuilder extends AppointmentBuilder {
         if (fechaHora == null || fechaHora.isBefore(LocalDateTime.now())) {
             throw new IllegalArgumentException("Fecha inválida");
         }
-        appointment.setFechaHora(fechaHora);
+
+        appointment.setFechaHora(
+            fechaHora.withSecond(0).withNano(0)
+        );
     }
 
     @Override
