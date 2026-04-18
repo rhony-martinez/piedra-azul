@@ -7,7 +7,6 @@ package com.mycompany.piedrazul.domain.service.scheduler;
 import java.time.LocalDateTime;
 
 import com.mycompany.piedrazul.domain.model.Appointment;
-import com.mycompany.piedrazul.domain.model.AppointmentStatus;
 import com.mycompany.piedrazul.domain.repository.IAppointmentRepository;
 
 /**

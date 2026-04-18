@@ -6,12 +6,19 @@ import com.mycompany.piedrazul.domain.model.Paciente;
 import com.mycompany.piedrazul.domain.model.Usuario;
 import com.mycompany.piedrazul.domain.repository.IAppointmentRepository;
 import com.mycompany.piedrazul.domain.repository.IMedicoRepository;
+import com.mycompany.piedrazul.domain.repository.INotificationRepository;
 import com.mycompany.piedrazul.domain.repository.IPacienteRepository;
 import com.mycompany.piedrazul.domain.repository.IPersonaRepository;
 import com.mycompany.piedrazul.domain.repository.IUsuarioRepository;
 import com.mycompany.piedrazul.domain.service.AppointmentService;
+import com.mycompany.piedrazul.domain.service.NotificationService;
+import com.mycompany.piedrazul.domain.service.facade.AppointmentFacade;
+import com.mycompany.piedrazul.domain.service.scheduler.AppointmentScheduler;
+import com.mycompany.piedrazul.domain.service.scheduler.ManualAppointmentScheduler;
+import com.mycompany.piedrazul.domain.service.scheduler.SelfServiceAppointmentScheduler;
 import com.mycompany.piedrazul.infrastructure.persistence.AppointmentRepositoryImpl;
 import com.mycompany.piedrazul.infrastructure.persistence.MedicoRepositoryImpl;
+import com.mycompany.piedrazul.infrastructure.persistence.NotificationRepositoryImpl;
 import com.mycompany.piedrazul.infrastructure.persistence.PacienteRepositoryImpl;
 import com.mycompany.piedrazul.infrastructure.persistence.PersonaRepositoryImpl;
 import com.mycompany.piedrazul.infrastructure.persistence.UsuarioRepositoryImpl;
@@ -30,6 +37,10 @@ public class SelfServiceAppointmentDialog extends JFrame {
     private IPacienteRepository pacienteRepository;
     private IMedicoRepository medicoRepository;
     private IPersonaRepository personaRepository;
+    private AppointmentFacade appointmentFacade;
+    private NotificationService notificationService;
+    private INotificationRepository notificacionRepository;
+
     private JFrame parentFrame;
 
     private JComboBox<Medico> cmbMedicos;
@@ -48,10 +59,24 @@ public class SelfServiceAppointmentDialog extends JFrame {
         this.pacienteRepository = new PacienteRepositoryImpl();
         this.medicoRepository = new MedicoRepositoryImpl();
         this.personaRepository = new PersonaRepositoryImpl();
+        this.notificacionRepository = new NotificationRepositoryImpl();
 
         IAppointmentRepository appointmentRepo = new AppointmentRepositoryImpl(
                 usuarioRepo, pacienteRepository, medicoRepository);
+
         this.appointmentService = new AppointmentService(appointmentRepo);
+        this.notificationService = new NotificationService(notificacionRepository);
+
+        AppointmentScheduler manualScheduler = new ManualAppointmentScheduler(appointmentRepo);
+        AppointmentScheduler selfServiceScheduler = new SelfServiceAppointmentScheduler(appointmentRepo);
+
+        this.appointmentFacade = new AppointmentFacade(
+                appointmentService,
+                appointmentRepo,
+                notificationService,
+                usuarioRepo,
+                manualScheduler,
+                selfServiceScheduler);
 
         initComponents();
         cargarMedicos();
@@ -278,13 +303,13 @@ public class SelfServiceAppointmentDialog extends JFrame {
                 throw new IllegalStateException("No se encontró el médico");
             }
 
-            // // Llamada correcta
-            // Appointment citaGuardada = appointmentService.crearCitaAutonoma(
-            //         paciente,
-            //         medico,
-            //         dateTime,
-            //         usuarioActual,
-            //         txtMotivo.getText().trim());
+            // Llamada correcta
+            Appointment citaGuardada = appointmentFacade.crearCitaAutonoma(
+                    paciente,
+                    medico,
+                    dateTime,
+                    usuarioActual,
+                    txtMotivo.getText().trim());
 
             JOptionPane.showMessageDialog(this,
                     "Cita agendada exitosamente el día " + dateTime.toLocalDate() +

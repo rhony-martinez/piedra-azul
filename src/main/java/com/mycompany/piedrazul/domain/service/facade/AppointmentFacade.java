@@ -6,6 +6,7 @@ package com.mycompany.piedrazul.domain.service.facade;
 
 import com.mycompany.piedrazul.domain.builder.AppointmentDirector;
 import com.mycompany.piedrazul.domain.builder.ManualAppointmentBuilder;
+import com.mycompany.piedrazul.domain.builder.SelfServiceAppointmentBuilder;
 import com.mycompany.piedrazul.domain.model.Appointment;
 import com.mycompany.piedrazul.domain.model.Medico;
 import com.mycompany.piedrazul.domain.model.Paciente;
@@ -15,6 +16,7 @@ import com.mycompany.piedrazul.domain.repository.IUsuarioRepository;
 import com.mycompany.piedrazul.domain.service.AppointmentService;
 import com.mycompany.piedrazul.domain.service.NotificationService;
 import com.mycompany.piedrazul.domain.service.scheduler.AppointmentScheduler;
+
 import java.time.LocalDateTime;
 
 /**
@@ -27,20 +29,23 @@ public class AppointmentFacade {
     private final NotificationService notificationService;
     private final IAppointmentRepository appointmentRepository;
     private final IUsuarioRepository usuarioRepository;
-    private final AppointmentScheduler scheduler;
+    private final AppointmentScheduler manualScheduler;
+    private final AppointmentScheduler selfServiceScheduler;
 
     public AppointmentFacade(
             AppointmentService appointmentService,
             IAppointmentRepository appointmentRepository,
             NotificationService notificationService,
             IUsuarioRepository usuarioRepository,
-            AppointmentScheduler scheduler) {
+            AppointmentScheduler manualScheduler,
+            AppointmentScheduler selfServiceScheduler) {
 
         this.appointmentService = appointmentService;
         this.appointmentRepository = appointmentRepository;
         this.notificationService = notificationService;
         this.usuarioRepository = usuarioRepository;
-        this.scheduler = scheduler;
+        this.manualScheduler = manualScheduler;
+        this.selfServiceScheduler = selfServiceScheduler;
     }
 
     public Appointment crearCitaManual(
@@ -59,7 +64,7 @@ public class AppointmentFacade {
                 observacion);
 
         // 2. Scheduler (Template Method)
-        scheduler.schedule(cita);
+        manualScheduler.schedule(cita);
 
         // 3. Persistencia
         Appointment guardada = appointmentService.crearCita(cita);
@@ -111,5 +116,39 @@ public class AppointmentFacade {
         return "Cita confirmada:\n"
                 + " " + cita.getFechaHora().toLocalDate()
                 + "\n " + cita.getFechaHora().toLocalTime();
+    }
+
+    public Appointment crearCitaAutonoma(
+            Paciente paciente,
+            Medico medico,
+            LocalDateTime fechaHora,
+            Usuario usuario,
+            String observacion) {
+
+        // 1. Builder
+        AppointmentDirector director = new AppointmentDirector();
+        SelfServiceAppointmentBuilder builder = new SelfServiceAppointmentBuilder();
+        director.setBuilder(builder);
+
+        Appointment cita = director.buildSelfServiceAppointment(
+                paciente,
+                medico,
+                fechaHora,
+                usuario,
+                observacion);
+
+        // 2. Scheduler 
+        selfServiceScheduler.schedule(cita);
+
+        // 3. Persistencia
+        Appointment guardada = appointmentService.crearCita(cita);
+
+        // 4. Notificación
+        notificationService.notifyUser(usuario,
+                "Cita agendada correctamente:\n" +
+                        cita.getFechaHora().toLocalDate() + " " +
+                        cita.getFechaHora().toLocalTime());
+
+        return guardada;
     }
 }

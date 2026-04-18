@@ -7,6 +7,7 @@ import com.mycompany.piedrazul.domain.service.NotificationService;
 import com.mycompany.piedrazul.domain.service.facade.AppointmentFacade;
 import com.mycompany.piedrazul.domain.service.scheduler.AppointmentScheduler;
 import com.mycompany.piedrazul.domain.service.scheduler.ManualAppointmentScheduler;
+import com.mycompany.piedrazul.domain.service.scheduler.SelfServiceAppointmentScheduler;
 import com.mycompany.piedrazul.infrastructure.persistence.*;
 import com.toedter.calendar.JDateChooser;
 import javax.swing.*;
@@ -74,15 +75,16 @@ public class AgendarCitaDialog extends JFrame {
         this.appointmentService = new AppointmentService(appointmentRepo);
         this.notificationService = new NotificationService(notificacionRepository);
 
-        AppointmentScheduler scheduler = new ManualAppointmentScheduler(appointmentRepo);
+        AppointmentScheduler manualScheduler = new ManualAppointmentScheduler(appointmentRepo);
+        AppointmentScheduler selfServiceScheduler = new SelfServiceAppointmentScheduler(appointmentRepo);
 
         this.appointmentFacade = new AppointmentFacade(
                 appointmentService,
                 appointmentRepo,
                 notificationService,
                 usuarioRepo,
-                scheduler
-        );
+                manualScheduler,
+                selfServiceScheduler);
 
         initComponents();
         cargarMedicos();
