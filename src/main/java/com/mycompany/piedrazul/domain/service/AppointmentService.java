@@ -140,4 +140,5 @@ public class AppointmentService {
 
         return !appointmentRepository.existsByMedicoAndFechaHora(medicoId, normalizada);
     }
+
 }

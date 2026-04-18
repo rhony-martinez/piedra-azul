@@ -10,6 +10,7 @@ import com.mycompany.piedrazul.domain.model.Appointment;
 import com.mycompany.piedrazul.domain.model.Medico;
 import com.mycompany.piedrazul.domain.model.Paciente;
 import com.mycompany.piedrazul.domain.model.Usuario;
+import com.mycompany.piedrazul.domain.repository.IAppointmentRepository;
 import com.mycompany.piedrazul.domain.repository.IUsuarioRepository;
 import com.mycompany.piedrazul.domain.service.AppointmentService;
 import com.mycompany.piedrazul.domain.service.NotificationService;
@@ -24,19 +25,22 @@ public class AppointmentFacade {
 
     private final AppointmentService appointmentService;
     private final NotificationService notificationService;
+    private final IAppointmentRepository appointmentRepository;
     private final IUsuarioRepository usuarioRepository;
     private final AppointmentScheduler scheduler;
 
     public AppointmentFacade(
             AppointmentService appointmentService,
-            AppointmentScheduler scheduler,
+            IAppointmentRepository appointmentRepository,
             NotificationService notificationService,
-            IUsuarioRepository usuarioRepository) {
+            IUsuarioRepository usuarioRepository,
+            AppointmentScheduler scheduler) {
 
         this.appointmentService = appointmentService;
-        this.scheduler = scheduler;
+        this.appointmentRepository = appointmentRepository;
         this.notificationService = notificationService;
         this.usuarioRepository = usuarioRepository;
+        this.scheduler = scheduler;
     }
 
     public Appointment crearCitaManual(

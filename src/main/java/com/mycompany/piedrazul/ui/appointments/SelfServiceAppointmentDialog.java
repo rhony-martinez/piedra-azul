@@ -278,13 +278,13 @@ public class SelfServiceAppointmentDialog extends JFrame {
                 throw new IllegalStateException("No se encontró el médico");
             }
 
-            // Llamada correcta
-            Appointment citaGuardada = appointmentService.crearCitaAutonoma(
-                    paciente,
-                    medico,
-                    dateTime,
-                    usuarioActual,
-                    txtMotivo.getText().trim());
+            // // Llamada correcta
+            // Appointment citaGuardada = appointmentService.crearCitaAutonoma(
+            //         paciente,
+            //         medico,
+            //         dateTime,
+            //         usuarioActual,
+            //         txtMotivo.getText().trim());
 
             JOptionPane.showMessageDialog(this,
                     "Cita agendada exitosamente el día " + dateTime.toLocalDate() +

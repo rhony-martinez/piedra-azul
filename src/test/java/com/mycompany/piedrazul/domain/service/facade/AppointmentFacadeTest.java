@@ -5,6 +5,8 @@ import com.mycompany.piedrazul.domain.repository.IAppointmentRepository;
 import com.mycompany.piedrazul.domain.repository.IUsuarioRepository;
 import com.mycompany.piedrazul.domain.service.AppointmentService;
 import com.mycompany.piedrazul.domain.service.NotificationService;
+import com.mycompany.piedrazul.domain.service.scheduler.AppointmentScheduler;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -34,6 +36,9 @@ class AppointmentFacadeTest {
     @Mock
     private IUsuarioRepository usuarioRepository;
 
+    @Mock
+    private AppointmentScheduler scheduler;
+
     private AppointmentFacade appointmentFacade;
     private Paciente paciente;
     private Medico medico;
@@ -43,10 +48,11 @@ class AppointmentFacadeTest {
     @BeforeEach
     void setUp() {
         appointmentFacade = new AppointmentFacade(
-            appointmentService,
-            appointmentRepository,
-            notificationService,
-            usuarioRepository
+                appointmentService,
+                appointmentRepository,
+                notificationService,
+                usuarioRepository,
+                scheduler
         );
 
         paciente = new Paciente();
@@ -83,8 +89,7 @@ class AppointmentFacadeTest {
         when(appointmentService.crearCita(any(Appointment.class))).thenReturn(citaMock);
 
         Appointment resultado = appointmentFacade.crearCitaManual(
-            paciente, medico, fechaHora, usuarioCreador, "Observación de prueba"
-        );
+                paciente, medico, fechaHora, usuarioCreador, "Observación de prueba");
 
         assertNotNull(resultado);
         assertEquals(paciente, resultado.getPaciente());
@@ -105,8 +110,7 @@ class AppointmentFacadeTest {
         when(appointmentService.crearCita(any(Appointment.class))).thenReturn(citaMock);
 
         Appointment resultado = appointmentFacade.crearCitaManual(
-            paciente, medico, fechaHora, usuarioCreador, null
-        );
+                paciente, medico, fechaHora, usuarioCreador, null);
 
         assertNotNull(resultado);
         verify(notificationService, never()).notifyUser(any(), anyString());
@@ -128,10 +132,8 @@ class AppointmentFacadeTest {
 
         appointmentFacade.crearCitaManual(paciente, medico, fechaHora, usuarioCreador, null);
 
-        verify(notificationService, times(1)).notifyUser(eq(usuarioCreador), argThat(mensaje ->
-            mensaje != null &&
-            mensaje.contains(fechaHora.toLocalDate().toString()) &&
-            mensaje.contains(fechaHora.toLocalTime().toString())
-        ));
+        verify(notificationService, times(1)).notifyUser(eq(usuarioCreador), argThat(mensaje -> mensaje != null &&
+                mensaje.contains(fechaHora.toLocalDate().toString()) &&
+                mensaje.contains(fechaHora.toLocalTime().toString())));
     }
 }
