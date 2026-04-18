@@ -11,6 +11,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -56,8 +57,7 @@ class AppointmentFacadeTest {
                 notificationService,
                 usuarioRepository,
                 manualScheduler,
-                selfServiceScheduler
-        );
+                selfServiceScheduler);
 
         paciente = new Paciente();
         paciente.setId(1);
@@ -107,16 +107,27 @@ class AppointmentFacadeTest {
     @Test
     @DisplayName("Debe crear cita manual sin notificar si no se encuentra usuario")
     void testCrearCitaManualSinNotificacion() {
+
+        // Arrange
         when(usuarioRepository.findByPersonaId(anyInt())).thenReturn(null);
 
         Appointment citaMock = new Appointment();
         citaMock.setId(1);
+        citaMock.setPaciente(paciente); // ✔ IMPORTANTE
+        citaMock.setMedico(medico); // ✔ IMPORTANTE
+        citaMock.setFechaHora(fechaHora);
+        citaMock.setCreadoPor(usuarioCreador);
+        citaMock.setObservacion("Observación");
+
         when(appointmentService.crearCita(any(Appointment.class))).thenReturn(citaMock);
 
+        // Act
         Appointment resultado = appointmentFacade.crearCitaManual(
                 paciente, medico, fechaHora, usuarioCreador, null);
 
+        // Assert
         assertNotNull(resultado);
+
         verify(notificationService, never()).notifyUser(any(), anyString());
     }
 
@@ -140,4 +151,13 @@ class AppointmentFacadeTest {
                 mensaje.contains(fechaHora.toLocalDate().toString()) &&
                 mensaje.contains(fechaHora.toLocalTime().toString())));
     }
+
+    @Test
+    @DisplayName("Flujo de agendamiento autónomo")
+    void shouldUseSelfServiceScheduler() {
+        appointmentFacade.crearCitaAutonoma(paciente, medico, fechaHora, usuarioCreador, null);
+
+        verify(selfServiceScheduler).schedule(any());
+    }
+
 }

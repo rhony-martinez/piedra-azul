@@ -103,23 +103,59 @@ public class AppointmentDecoratorTest {
     }
 
     @Test
-    @DisplayName("6. El decorador funciona con el patrón State")
+    @DisplayName("6. El decorador respeta el flujo de estados correctamente")
     void testDecoratorConState() {
-        // Primero confirmar la cita correctamente
-        citaNormal.confirmar(); // PROGRAMADA → CONFIRMADA
-        assertEquals(AppointmentStatus.CONFIRMADA, citaNormal.getEstado());
 
-        // Crear el decorador después de confirmar
-        PriorityAppointment citaDecorada = new PriorityAppointment(citaNormal);
+        // Arrange
+        Appointment cita = new Appointment();
+        cita.setId(200);
+        cita.setObservacion("Consulta general");
 
-        // Verificar que la cita decorada también está CONFIRMADA
+        Medico medico = new Medico();
+        medico.setPrimerNombre("Dr. Juan");
+        medico.setPrimerApellido("Pérez");
+        cita.setMedico(medico);
+
+        Paciente paciente = new Paciente();
+        paciente.setPrimerNombre("Carlos");
+        paciente.setPrimerApellido("López");
+        cita.setPaciente(paciente);
+
+        // IMPORTANTE: simular flujo MANUAL → inicia PROGRAMADA
+        assertEquals(AppointmentStatus.PROGRAMADA, cita.getEstado());
+
+        // Act
+        cita.confirmar(); // ✔ transición válida
+        PriorityAppointment citaDecorada = new PriorityAppointment(cita);
+
+        // Assert
         assertEquals(AppointmentStatus.CONFIRMADA, citaDecorada.getEstado());
 
-        // Atender
+        // Siguiente transición válida
         citaDecorada.atender();
         assertEquals(AppointmentStatus.ATENDIDA, citaDecorada.getEstado());
 
-        // La descripción aún debe tener prioridad
+        // Decorator sigue funcionando
         assertTrue(citaDecorada.getDescription().contains("[PRIORIDAD ALTA]"));
+    }
+
+    @Test
+    @DisplayName("7. No debe permitir confirmar una cita ya confirmada")
+    void shouldNotConfirmTwice() {
+        Appointment cita = new Appointment();
+        cita.confirmar();
+
+        assertThrows(IllegalStateException.class, cita::confirmar);
+    }
+
+    @Test
+    @DisplayName("8. Decorator debe delegar comportamiento al objeto base")
+    void shouldDelegateStateTransitions() {
+        Appointment cita = new Appointment();
+        PriorityAppointment decorada = new PriorityAppointment(cita);
+
+        decorada.confirmar();
+
+        assertEquals(AppointmentStatus.CONFIRMADA, cita.getEstado());
     }
 }
