@@ -37,7 +37,10 @@ class AppointmentFacadeTest {
     private IUsuarioRepository usuarioRepository;
 
     @Mock
-    private AppointmentScheduler scheduler;
+    private AppointmentScheduler manualScheduler;
+
+    @Mock
+    private AppointmentScheduler selfServiceScheduler;
 
     private AppointmentFacade appointmentFacade;
     private Paciente paciente;
@@ -52,7 +55,8 @@ class AppointmentFacadeTest {
                 appointmentRepository,
                 notificationService,
                 usuarioRepository,
-                scheduler
+                manualScheduler,
+                selfServiceScheduler
         );
 
         paciente = new Paciente();
